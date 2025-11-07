@@ -41,10 +41,11 @@ export function SimulateMatchForm() {
             {/* Home Team */}
             <div className="space-y-4">
               <div className="form-control">
-                <label className="label">
+                <label htmlFor="home-team" className="label">
                   <span className="label-text font-semibold">Home Team</span>
                 </label>
                 <input
+                  id="home-team"
                   type="text"
                   value={homeTeamName}
                   onChange={(e) => setHomeTeamName(e.target.value)}
@@ -55,10 +56,11 @@ export function SimulateMatchForm() {
               </div>
 
               <div className="form-control">
-                <label className="label">
+                <label htmlFor="home-strength" className="label">
                   <span className="label-text">Strength: {homeStrength}</span>
                 </label>
                 <input
+                  id="home-strength"
                   type="range"
                   min="0"
                   max="100"
@@ -77,10 +79,11 @@ export function SimulateMatchForm() {
             {/* Away Team */}
             <div className="space-y-4">
               <div className="form-control">
-                <label className="label">
+                <label htmlFor="away-team" className="label">
                   <span className="label-text font-semibold">Away Team</span>
                 </label>
                 <input
+                  id="away-team"
                   type="text"
                   value={awayTeamName}
                   onChange={(e) => setAwayTeamName(e.target.value)}
@@ -91,10 +94,11 @@ export function SimulateMatchForm() {
               </div>
 
               <div className="form-control">
-                <label className="label">
+                <label htmlFor="away-strength" className="label">
                   <span className="label-text">Strength: {awayStrength}</span>
                 </label>
                 <input
+                  id="away-strength"
                   type="range"
                   min="0"
                   max="100"
