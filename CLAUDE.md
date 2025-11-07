@@ -5,12 +5,18 @@
 
 ## Core Principles (non-negotiable)
 
+- **TDD FIRST - NO EXCEPTIONS** – **WRITE THE FAILING TEST BEFORE ANY CODE**. Follow RED-GREEN-REFACTOR religiously:
+  1. **RED**: Write a failing test for the new behavior
+  2. **GREEN**: Write minimal code to make the test pass
+  3. **REFACTOR**: Improve code while keeping tests green
+  - **NEVER** write domain entities, value objects, services, or coordinators without tests FIRST
+  - **NEVER** skip this step even for "small changes" or refactorings
+  - Tests must be in place BEFORE implementation - not after, not during, BEFORE
 - **Immutable domain entities** – use private readonly fields + `withXxx()` factory methods that return new instances.
 - **No business logic in entities** – entities only hold data + simple value-object validation in `static create()`.
 - **All business logic lives in Services** – pure TS classes, no React/Next imports.
 - **Service Coordinator Pattern** – complex flows live in `application/coordinators/`. A coordinator receives multiple services in constructor and orchestrates them. Example: `SeasonCoordinator` calls `MatchSimulationService → LeagueService → FinanceService → NewsService`.
 - **Server Components only** – UI is 100% server-rendered unless interactivity is required (then 'use client' + minimal Client Component).
-- **TDD everywhere** – RED-GREEN-REFACTOR for all domain and application logic.
 
 ## Folder Structure
 
@@ -144,11 +150,54 @@ export async function simulateMatch(input: SimulateMatchInput) {
 }
 ```
 
-## Testing (TDD mandatory – RED-GREEN-REFACTOR)
+## TDD Workflow (MANDATORY - NO CODE WITHOUT TESTS FIRST)
+
+**CRITICAL**: Every feature MUST follow this exact sequence. NO EXCEPTIONS.
+
+### Step-by-Step TDD Process
+
+**Example: Adding a new Standing Sorter Strategy**
+
+1. **RED** - Write the failing test FIRST:
+```ts
+// tests/unit/application/strategies/LaLigaSorter.spec.ts
+describe('LaLigaSorter', () => {
+  it('should sort by points first', () => {
+    const sorter = new LaLigaSorter();
+    const standings = [/* test data */];
+    const sorted = sorter.sort(standings);
+    expect(sorted[0].getPoints()).toBe(90); // FAILS - LaLigaSorter doesn't exist yet
+  });
+});
+```
+Run `pnpm test:unit` - **TEST MUST FAIL**
+
+2. **GREEN** - Write minimal code to pass:
+```ts
+// application/strategies/StandingSorter.ts
+export class LaLigaSorter implements StandingSorter {
+  sort(standings: Standing[]): Standing[] {
+    // Minimal implementation to make test pass
+    return standings.sort((a, b) => b.getPoints() - a.getPoints());
+  }
+}
+```
+Run `pnpm test:unit` - **TEST MUST PASS**
+
+3. **REFACTOR** - Improve while keeping tests green:
+```ts
+// Add more test cases, refactor sorting logic, etc.
+// Tests MUST stay green throughout
+```
+
+**If you write ANY production code before the test exists and fails, you have violated TDD.**
+
+### Testing Requirements
 
 * **Framework**: Vitest (fast, Jest-compatible)
 * **Coverage**: 100% on domain + application layers
 * **E2E**: Playwright for full user flows
+* **Test Files**: Must exist in `tests/unit/` before production code
 * **Current Status**: 59 unit tests, 10 e2e tests
 
 Run:
@@ -159,6 +208,19 @@ pnpm test:coverage  # vitest --coverage
 pnpm test:e2e       # playwright test
 pnpm test:e2e:ui    # playwright test --ui
 ```
+
+### What MUST Have Tests Before Implementation
+
+- ✅ Domain Entities (all methods including `withXxx()`)
+- ✅ Value Objects (all validation and methods)
+- ✅ Services (all business logic)
+- ✅ Coordinators (all orchestration logic)
+- ✅ Strategies (all algorithm implementations)
+- ✅ Utility functions (all pure functions)
+- ❌ UI Components (test via E2E instead)
+- ❌ Server Actions (test via integration/E2E)
+
+**REMEMBER: Test file FIRST, then implementation. RED → GREEN → REFACTOR.**
 
 ## Current Implementation Status
 

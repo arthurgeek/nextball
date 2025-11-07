@@ -7,7 +7,6 @@ import { ChampionshipHistoryDialog } from './ChampionshipHistoryDialog';
 import {
   createNewSeason,
   simulateNextRound,
-  getChampionshipStats,
 } from '@/app/actions';
 import type { SerializedSeason } from '@/application/services/LeaguePersistenceService';
 
@@ -49,14 +48,58 @@ export function LeagueSimulator() {
     }
   }, [season]);
 
-  // Load championship stats
+  // Load championship stats from localStorage (client-side only)
   useEffect(() => {
     loadChampionshipStats();
   }, []);
 
-  const loadChampionshipStats = async () => {
-    const stats = await getChampionshipStats();
-    setChampionshipStats(stats);
+  const loadChampionshipStats = () => {
+    try {
+      const historyJson = localStorage.getItem('championship-history');
+      if (!historyJson) {
+        setChampionshipStats([]);
+        return;
+      }
+
+      const history: Array<{
+        year: number;
+        teamId: string;
+        teamName: string;
+      }> = JSON.parse(historyJson);
+
+      // Group by team
+      const statsMap = new Map<
+        string,
+        { count: number; years: number[]; teamName: string }
+      >();
+
+      for (const record of history) {
+        const existing = statsMap.get(record.teamId);
+        if (existing) {
+          existing.count++;
+          existing.years.push(record.year);
+          existing.years.sort((a, b) => b - a);
+        } else {
+          statsMap.set(record.teamId, {
+            count: 1,
+            years: [record.year],
+            teamName: record.teamName,
+          });
+        }
+      }
+
+      const stats = Array.from(statsMap.entries()).map(([teamId, data]) => ({
+        teamId,
+        teamName: data.teamName,
+        count: data.count,
+        years: data.years,
+      }));
+
+      setChampionshipStats(stats);
+    } catch (error) {
+      console.error('Failed to load championship stats:', error);
+      setChampionshipStats([]);
+    }
   };
 
   const handleStartNewSeason = async () => {
@@ -65,6 +108,7 @@ export function LeagueSimulator() {
       const currentYear = new Date().getFullYear();
       const newSeason = await createNewSeason(currentYear);
       setSeason(newSeason);
+      // Set viewing round to 1 (first fixtures) since currentRound is 0
       setViewingRound(1);
     } catch (error) {
       console.error('Failed to create season:', error);
@@ -109,7 +153,8 @@ export function LeagueSimulator() {
 
   const handleGoToLatest = () => {
     if (season) {
-      setViewingRound(season.currentRound);
+      // Go to the next unplayed round (currentRound + 1)
+      setViewingRound(season.currentRound + 1);
     }
   };
 
@@ -139,12 +184,15 @@ export function LeagueSimulator() {
 
   const isSeasonComplete = season.currentRound >= season.league.teams.length * 2 - 2;
   const canSimulate = !isSeasonComplete;
-  const isViewingLatest = viewingRound === season.currentRound;
+  // We're viewing the "next" round if viewingRound is currentRound + 1
+  const isViewingNext = viewingRound === season.currentRound + 1;
+  // We're viewing latest completed results if viewingRound === currentRound and currentRound > 0
+  const isViewingLatest = viewingRound === season.currentRound && season.currentRound > 0;
 
   return (
-    <div className="max-w-7xl mx-auto p-4 space-y-4">
+    <div className="max-w-7xl mx-auto p-2 sm:p-4 space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-2">
         <div>
           <h1 className="text-2xl font-bold">{season.league.name}</h1>
           <p className="text-sm opacity-70">Season {season.year}</p>
@@ -172,7 +220,7 @@ export function LeagueSimulator() {
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
+      <div className="flex items-center justify-between bg-base-200 p-3 rounded-lg">
         <button
           className="btn btn-sm"
           onClick={handlePreviousRound}
@@ -186,7 +234,7 @@ export function LeagueSimulator() {
             Round {viewingRound} of {season.rounds.length}
           </span>
 
-          {!isViewingLatest && (
+          {!isViewingNext && !isViewingLatest && (
             <button
               className="btn btn-sm btn-primary"
               onClick={handleGoToLatest}
@@ -195,7 +243,7 @@ export function LeagueSimulator() {
             </button>
           )}
 
-          {isViewingLatest && canSimulate && (
+          {isViewingNext && canSimulate && (
             <button
               className="btn btn-sm btn-success"
               onClick={handleSimulateNextRound}
@@ -225,19 +273,19 @@ export function LeagueSimulator() {
         </button>
       </div>
 
-      {/* Split-screen: League Table + Fixtures */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: League Table */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">League Table</h2>
+      {/* Split-screen: League Table (bigger) + Fixtures (smaller) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Left: League Table - takes 2 columns */}
+        <div className="lg:col-span-2 card bg-base-100 shadow-xl">
+          <div className="card-body p-4">
+            <h2 className="card-title text-base">League Table</h2>
             <LeagueTable season={season} />
           </div>
         </div>
 
-        {/* Right: Fixtures/Results */}
+        {/* Right: Fixtures/Results - takes 1 column */}
         <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
+          <div className="card-body p-4">
             <FixturesResults season={season} viewingRound={viewingRound} />
           </div>
         </div>
