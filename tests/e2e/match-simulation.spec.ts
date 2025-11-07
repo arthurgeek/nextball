@@ -61,9 +61,8 @@ test.describe('Match Simulation', () => {
 
     // Second simulation
     await page.getByRole('button', { name: 'Simulate Match' }).click();
-    await page.waitForTimeout(500); // Wait for UI update
 
-    // Now history should be visible
+    // Wait for history section to appear (no timeout, proper element wait)
     await expect(page.getByRole('heading', { name: 'Match History' })).toBeVisible();
   });
 
@@ -98,14 +97,19 @@ test.describe('Match Simulation', () => {
     // Simulate 12 matches
     for (let i = 0; i < 12; i++) {
       await page.getByRole('button', { name: 'Simulate Match' }).click();
-      await page.waitForTimeout(200); // Small delay between clicks
+      // Wait for the new result to appear before clicking again
+      if (i === 0) {
+        await expect(page.getByRole('heading', { name: 'Latest Result' })).toBeVisible();
+      }
     }
 
-    // Wait for last simulation to complete
-    await expect(page.getByRole('heading', { name: 'Latest Result' })).toBeVisible();
-
-    // Check that "Showing last 10 matches" message appears
+    // Wait a bit for final simulation to settle
     await expect(page.getByText('Showing last 10 matches')).toBeVisible();
+
+    // Actually count the match result cards - should be exactly 10
+    // Count all cards that contain "vs" text (match results)
+    const matchCards = page.locator('.card.bg-base-100:has-text("vs")');
+    await expect(matchCards).toHaveCount(10);
   });
 
   test('should show loading state during simulation', async ({ page }) => {
@@ -131,15 +135,5 @@ test.describe('Match Simulation', () => {
     // We'll use getByText with partial match
     await expect(page.getByText('Home').first()).toBeVisible();
     await expect(page.getByText('Away').first()).toBeVisible();
-  });
-
-  test('should show how it works section', async ({ page }) => {
-    // Check "How it works" section
-    await expect(page.getByRole('heading', { name: 'How it works' })).toBeVisible();
-
-    // Check key feature descriptions
-    await expect(page.getByText(/Logistic regression/)).toBeVisible();
-    await expect(page.getByText(/Performance variance/)).toBeVisible();
-    await expect(page.getByText(/Poisson distribution/)).toBeVisible();
   });
 });

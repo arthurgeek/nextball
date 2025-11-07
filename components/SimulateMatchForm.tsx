@@ -10,11 +10,11 @@ export function SimulateMatchForm() {
   const [awayTeamName, setAwayTeamName] = useState('Liverpool');
   const [awayStrength, setAwayStrength] = useState(83);
   const [matchHistory, setMatchHistory] = useState<SimulateMatchOutput[]>([]);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSimulating(true);
+    setIsPending(true);
 
     try {
       const output = await simulateMatch({
@@ -27,7 +27,7 @@ export function SimulateMatchForm() {
       // Add new result to the beginning of history, keep last 10 matches
       setMatchHistory(prev => [output, ...prev].slice(0, 10));
     } finally {
-      setIsSimulating(false);
+      setIsPending(false);
     }
   };
 
@@ -115,9 +115,9 @@ export function SimulateMatchForm() {
             <button
               type="submit"
               className="btn btn-primary btn-lg"
-              disabled={isSimulating}
+              disabled={isPending}
             >
-              {isSimulating ? (
+              {isPending ? (
                 <>
                   <span className="loading loading-spinner"></span>
                   Simulating...
