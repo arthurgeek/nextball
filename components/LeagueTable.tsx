@@ -37,7 +37,10 @@ export function LeagueTable({ season }: LeagueTableProps) {
             const team = teamMap.get(standing.teamId)!;
             const points = standing.won * 3 + standing.drawn;
             const goalDiff = standing.goalsFor - standing.goalsAgainst;
-            const posChange = standing.position - standing.previousPosition;
+            // Position change: previousPosition - position (positive = moved up)
+            const posChange = standing.previousPosition === 0
+              ? 0
+              : standing.previousPosition - standing.position;
             const isChampion =
               season.championId === standing.teamId && season.championId;
 
