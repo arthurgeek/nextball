@@ -41,9 +41,9 @@ test.describe('Match Simulation', () => {
     // Wait for simulation to complete
     await expect(page.getByRole('heading', { name: 'Latest Result' })).toBeVisible({ timeout: 5000 });
 
-    // Check team names appear in result
-    await expect(page.getByText('Arsenal')).toBeVisible();
-    await expect(page.getByText('Chelsea')).toBeVisible();
+    // Check team names appear in result - use heading role to avoid matching badge text
+    await expect(page.getByRole('heading', { name: 'Arsenal' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Chelsea' })).toBeVisible();
 
     // Check that we have a scoreline displayed (the score is in a large text)
     // Result badge should show who won
@@ -103,12 +103,12 @@ test.describe('Match Simulation', () => {
       }
     }
 
-    // Wait a bit for final simulation to settle
+    // Wait for message confirming we're showing last 10 matches
     await expect(page.getByText('Showing last 10 matches')).toBeVisible();
 
-    // Actually count the match result cards - should be exactly 10
-    // Count all cards that contain "vs" text (match results)
-    const matchCards = page.locator('.card.bg-base-100:has-text("vs")');
+    // Count match result cards - should be exactly 10 total
+    // (1 in "Latest Result" section + 9 in "Match History" section = 10 total)
+    const matchCards = page.getByRole('heading', { name: 'Match Result' });
     await expect(matchCards).toHaveCount(10);
   });
 
