@@ -148,7 +148,7 @@ describe('MatchSimulationService', () => {
   });
 
   describe('team strength impact', () => {
-    it('should give stronger team more goals on average', () => {
+    it('should give stronger team more wins (balanced home/away)', () => {
       const strongTeam = Team.create({
         id: 'strong',
         name: 'Strong FC',
@@ -161,29 +161,51 @@ describe('MatchSimulationService', () => {
         strength: Strength.create(60),
       });
 
-      const strongHomeMatch = Match.create({
-        id: 'match-1',
-        homeTeam: strongTeam,
-        awayTeam: weakTeam,
-      });
-
-      const simulations = 1000;
+      const simulations = 500; // Half home, half away
       let strongWins = 0;
+      let weakWins = 0;
+      let draws = 0;
 
+      // Run equal number of home and away matches to remove home advantage bias
       for (let i = 0; i < simulations; i++) {
-        const result = service.simulate(strongHomeMatch);
-        if (result.getResult()?.isHomeWin()) {
-          strongWins++;
-        }
+        // Strong team at home
+        const strongHomeMatch = Match.create({
+          id: `match-home-${i}`,
+          homeTeam: strongTeam,
+          awayTeam: weakTeam,
+        });
+        const homeResult = service.simulate(strongHomeMatch);
+
+        if (homeResult.getResult()?.isHomeWin()) strongWins++;
+        else if (homeResult.getResult()?.isAwayWin()) weakWins++;
+        else draws++;
+
+        // Strong team away
+        const strongAwayMatch = Match.create({
+          id: `match-away-${i}`,
+          homeTeam: weakTeam,
+          awayTeam: strongTeam,
+        });
+        const awayResult = service.simulate(strongAwayMatch);
+
+        if (awayResult.getResult()?.isAwayWin()) strongWins++;
+        else if (awayResult.getResult()?.isHomeWin()) weakWins++;
+        else draws++;
       }
 
-      // Strong team at home should win majority of matches
-      // 55%+ is realistic for 90 vs 60 strength (football has high variance)
-      const winRate = (strongWins / simulations) * 100;
-      expect(winRate).toBeGreaterThan(50);
+      const totalMatches = simulations * 2;
+      const strongWinRate = (strongWins / totalMatches) * 100;
+
+      // Strong team (90) should beat weak team (60) around 55-65% of the time
+      // (balanced for home/away to isolate strength impact)
+      expect(strongWinRate).toBeGreaterThan(50);
+      expect(strongWinRate).toBeLessThan(70);
+
+      // Strong team should win more than weak team
+      expect(strongWins).toBeGreaterThan(weakWins);
     });
 
-    it('should allow weak teams to upset strong teams occasionally', () => {
+    it('should allow weak teams to upset strong teams occasionally (balanced home/away)', () => {
       const strongTeam = Team.create({
         id: 'strong',
         name: 'Strong FC',
@@ -196,32 +218,45 @@ describe('MatchSimulationService', () => {
         strength: Strength.create(60),
       });
 
-      // Weak team at home vs strong team away
-      const weakHomeMatch = Match.create({
-        id: 'match-1',
-        homeTeam: weakTeam,
-        awayTeam: strongTeam,
-      });
-
-      const simulations = 1000;
+      const simulations = 500;
       let weakWins = 0;
       let draws = 0;
       let strongWins = 0;
 
+      // Balance home/away to test pure strength + variance impact
       for (let i = 0; i < simulations; i++) {
-        const result = service.simulate(weakHomeMatch);
-        if (result.getResult()?.isHomeWin()) {
-          weakWins++;
-        } else if (result.getResult()?.isDraw()) {
-          draws++;
-        } else {
-          strongWins++;
-        }
+        // Weak team at home
+        const weakHomeMatch = Match.create({
+          id: `match-weak-home-${i}`,
+          homeTeam: weakTeam,
+          awayTeam: strongTeam,
+        });
+        const homeResult = service.simulate(weakHomeMatch);
+
+        if (homeResult.getResult()?.isHomeWin()) weakWins++;
+        else if (homeResult.getResult()?.isDraw()) draws++;
+        else strongWins++;
+
+        // Weak team away
+        const weakAwayMatch = Match.create({
+          id: `match-weak-away-${i}`,
+          homeTeam: strongTeam,
+          awayTeam: weakTeam,
+        });
+        const awayResult = service.simulate(weakAwayMatch);
+
+        if (awayResult.getResult()?.isAwayWin()) weakWins++;
+        else if (awayResult.getResult()?.isDraw()) draws++;
+        else strongWins++;
       }
 
-      // Weak team should win at least 15% of the time (home advantage + performance variance)
-      const weakWinRate = (weakWins / simulations) * 100;
+      const totalMatches = simulations * 2;
+      const weakWinRate = (weakWins / totalMatches) * 100;
+
+      // Weak team (60) should beat strong team (90) occasionally due to variance
+      // Even balanced for home/away, performance variance allows ~20-35% upset rate
       expect(weakWinRate).toBeGreaterThan(15);
+      expect(weakWinRate).toBeLessThan(40);
 
       // But strong team should still win more overall
       expect(strongWins).toBeGreaterThan(weakWins);
