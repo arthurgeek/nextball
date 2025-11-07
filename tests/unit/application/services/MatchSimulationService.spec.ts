@@ -56,18 +56,34 @@ describe('MatchSimulationService', () => {
       expect(Number.isInteger(result.getResult()?.getAwayGoals())).toBe(true);
     });
 
-    it('should produce reasonable scores (0-10 goals per team)', () => {
-      // Run 100 simulations and check all scores are reasonable
-      for (let i = 0; i < 100; i++) {
+    it('should produce reasonable scores with realistic averages', () => {
+      const simulations = 1000;
+      let totalHomeGoals = 0;
+      let totalAwayGoals = 0;
+
+      for (let i = 0; i < simulations; i++) {
         const result = service.simulate(match);
         const homeGoals = result.getResult()?.getHomeGoals() ?? 0;
         const awayGoals = result.getResult()?.getAwayGoals() ?? 0;
 
-        expect(homeGoals).toBeLessThanOrEqual(10);
-        expect(awayGoals).toBeLessThanOrEqual(10);
+        // Check bounds (allowing for rare high-scoring games with performance variance)
+        expect(homeGoals).toBeLessThanOrEqual(15);
+        expect(awayGoals).toBeLessThanOrEqual(15);
         expect(homeGoals).toBeGreaterThanOrEqual(0);
         expect(awayGoals).toBeGreaterThanOrEqual(0);
+
+        totalHomeGoals += homeGoals;
+        totalAwayGoals += awayGoals;
       }
+
+      // Check average goals per match is realistic (typically 1-2 goals per team)
+      const avgHomeGoals = totalHomeGoals / simulations;
+      const avgAwayGoals = totalAwayGoals / simulations;
+
+      expect(avgHomeGoals).toBeGreaterThan(0.5);
+      expect(avgHomeGoals).toBeLessThan(2.5);
+      expect(avgAwayGoals).toBeGreaterThan(0.5);
+      expect(avgAwayGoals).toBeLessThan(2.5);
     });
   });
 
@@ -100,6 +116,16 @@ describe('MatchSimulationService', () => {
       const homeWinPercent = (homeWins / simulations) * 100;
       expect(homeWinPercent).toBeGreaterThan(38);
       expect(homeWinPercent).toBeLessThan(52);
+
+      // Draw percentage should be realistic (~20-35%)
+      const drawPercent = (draws / simulations) * 100;
+      expect(drawPercent).toBeGreaterThan(15);
+      expect(drawPercent).toBeLessThan(40);
+
+      // Away win percentage should be realistic (~20-35%)
+      const awayWinPercent = (awayWins / simulations) * 100;
+      expect(awayWinPercent).toBeGreaterThan(15);
+      expect(awayWinPercent).toBeLessThan(40);
     });
 
     it('should generate more home goals than away goals on average', () => {
@@ -155,6 +181,53 @@ describe('MatchSimulationService', () => {
       // 55%+ is realistic for 90 vs 60 strength (football has high variance)
       const winRate = (strongWins / simulations) * 100;
       expect(winRate).toBeGreaterThan(50);
+    });
+
+    it('should allow weak teams to upset strong teams occasionally', () => {
+      const strongTeam = Team.create({
+        id: 'strong',
+        name: 'Strong FC',
+        strength: Strength.create(90),
+      });
+
+      const weakTeam = Team.create({
+        id: 'weak',
+        name: 'Weak FC',
+        strength: Strength.create(60),
+      });
+
+      // Weak team at home vs strong team away
+      const weakHomeMatch = Match.create({
+        id: 'match-1',
+        homeTeam: weakTeam,
+        awayTeam: strongTeam,
+      });
+
+      const simulations = 1000;
+      let weakWins = 0;
+      let draws = 0;
+      let strongWins = 0;
+
+      for (let i = 0; i < simulations; i++) {
+        const result = service.simulate(weakHomeMatch);
+        if (result.getResult()?.isHomeWin()) {
+          weakWins++;
+        } else if (result.getResult()?.isDraw()) {
+          draws++;
+        } else {
+          strongWins++;
+        }
+      }
+
+      // Weak team should win at least 15% of the time (home advantage + performance variance)
+      const weakWinRate = (weakWins / simulations) * 100;
+      expect(weakWinRate).toBeGreaterThan(15);
+
+      // But strong team should still win more overall
+      expect(strongWins).toBeGreaterThan(weakWins);
+
+      // There should be some draws
+      expect(draws).toBeGreaterThan(0);
     });
   });
 });

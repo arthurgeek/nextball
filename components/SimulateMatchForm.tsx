@@ -9,7 +9,7 @@ export function SimulateMatchForm() {
   const [homeStrength, setHomeStrength] = useState(85);
   const [awayTeamName, setAwayTeamName] = useState('Liverpool');
   const [awayStrength, setAwayStrength] = useState(83);
-  const [result, setResult] = useState<SimulateMatchOutput | null>(null);
+  const [matchHistory, setMatchHistory] = useState<SimulateMatchOutput[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +23,9 @@ export function SimulateMatchForm() {
         awayTeamName,
         awayTeamStrength: awayStrength,
       });
-      setResult(output);
+
+      // Add new result to the beginning of history, keep last 10 matches
+      setMatchHistory(prev => [output, ...prev].slice(0, 10));
     } finally {
       setIsSimulating(false);
     }
@@ -128,7 +130,33 @@ export function SimulateMatchForm() {
         </div>
       </form>
 
-      {result && <MatchResult result={result} />}
+      {/* Latest Match Result */}
+      {matchHistory.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold mb-3">Latest Result</h3>
+          <MatchResult result={matchHistory[0]} />
+        </div>
+      )}
+
+      {/* Match History */}
+      {matchHistory.length > 1 && (
+        <div>
+          <h3 className="text-xl font-bold mb-3">Match History</h3>
+          <div className="space-y-3">
+            {matchHistory.slice(1).map((match, index) => (
+              <div key={index} className="opacity-75 hover:opacity-100 transition-opacity">
+                <MatchResult result={match} />
+              </div>
+            ))}
+          </div>
+
+          {matchHistory.length >= 10 && (
+            <div className="text-center text-sm text-base-content/50 mt-4">
+              Showing last 10 matches
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

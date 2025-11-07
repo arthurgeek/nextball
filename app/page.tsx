@@ -9,7 +9,7 @@ export default function Home() {
           Football Match Simulator
         </p>
         <p className="text-sm text-base-content/50 mt-2">
-          Using Poisson distribution with team strength and home advantage
+          Advanced simulation with logistic regression, performance variance & home advantage
         </p>
       </div>
 
@@ -21,9 +21,11 @@ export default function Home() {
         <div className="divider"></div>
         <h3 className="font-semibold mb-2">How it works</h3>
         <ul className="space-y-1">
-          <li>Team strength (0-100) determines expected goals (xG)</li>
+          <li>Logistic regression converts team strength to xG (S-curve for realism)</li>
           <li>Home team gets +15% boost to xG (realistic home advantage)</li>
+          <li>Performance variance adds random multipliers (most: 0.85-1.15x, rare miracles: 1.8-2.3x)</li>
           <li>Actual goals generated using Poisson distribution</li>
+          <li>Weak teams can upset strong teams (~20% of the time)</li>
           <li>100% pure TypeScript business logic - framework agnostic</li>
         </ul>
       </div>
