@@ -154,10 +154,10 @@ export async function simulateMatch(input: SimulateMatchInput) {
 Run:
 
 ```sh
-npm run test:unit      # vitest
-npm run test:coverage  # vitest --coverage
-npm run test:e2e       # playwright test
-npm run test:e2e:ui    # playwright test --ui
+pnpm test:unit      # vitest
+pnpm test:coverage  # vitest --coverage
+pnpm test:e2e       # playwright test
+pnpm test:e2e:ui    # playwright test --ui
 ```
 
 ## Current Implementation Status
