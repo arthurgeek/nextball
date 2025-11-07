@@ -50,6 +50,10 @@ export function generatePerformanceModifier(): number {
     }
   }
 
-  // Fallback (should never reach here)
+
+  // Fallback for type safety - mathematically unreachable with
+  // valid PERFORMANCE_LEVELS but required by TypeScript as it
+  // can't prove loop always returns
+  /* v8 ignore next @preserve */
   return 1.0;
 }
