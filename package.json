@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
+    "test:unit:ui": "vitest --ui",
     "test:e2e:ui": "playwright test --ui",
     "test:coverage": "vitest --coverage"
   },
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.0",
     "@vitest/coverage-v8": "4.0.8",
+    "@vitest/ui": "^4.0.8",
     "babel-plugin-react-compiler": "1.0.0",
     "daisyui": "^5.4.7",
     "eslint": "^9",
