@@ -204,8 +204,8 @@ The architecture supports adding these without breaking existing functionality.
 
 ## References
 
-- **Poisson Distribution in Football**: [Maher (1982)](https://doi.org/10.2307/2987621)
-- **xG Models**: [Eggels et al. (2016)](https://doi.org/10.1145/2964284.2964298)
+- **Poisson Distribution in Football**: [Maher (1982)](https://doi.org/10.1111/j.1467-9574.1982.tb00782.x)
+- **xG Models**: [Eggels et al. (2016)](https://research.tue.nl/en/publications/explaining-soccer-match-outcomes-with-goal-scoring-opportunities-/)
 - **Home Advantage**: [Pollard & Pollard (2005)](https://doi.org/10.1080/02640410400021641)
 - **Logistic Regression**: Standard statistical technique for binary/probabilistic outcomes
 
