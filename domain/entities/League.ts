@@ -11,6 +11,7 @@ interface CreateLeagueProps {
   id: string;
   name: string;
   teams: Team[];
+  sortingStrategy?: string;
 }
 
 /**
@@ -21,12 +22,18 @@ export class League {
   private constructor(
     private readonly id: string,
     private readonly name: string,
-    private readonly teams: Team[]
+    private readonly teams: Team[],
+    private readonly sortingStrategy: string
   ) {}
 
   static create(props: CreateLeagueProps): League {
     CreateLeagueSchema.parse(props);
-    return new League(props.id, props.name, props.teams);
+    return new League(
+      props.id,
+      props.name,
+      props.teams,
+      props.sortingStrategy ?? 'premier-league'
+    );
   }
 
   getId(): string {
@@ -49,6 +56,10 @@ export class League {
     return this.teams.find((team) => team.getId() === id);
   }
 
+  getSortingStrategy(): string {
+    return this.sortingStrategy;
+  }
+
   /**
    * Calculate total rounds needed for a round-robin tournament.
    * Each team plays every other team twice (home and away).
@@ -61,13 +72,20 @@ export class League {
    * Add a team to the league
    */
   withTeam(team: Team): League {
-    return new League(this.id, this.name, [...this.teams, team]);
+    return new League(this.id, this.name, [...this.teams, team], this.sortingStrategy);
   }
 
   /**
    * Replace all teams
    */
   withTeams(teams: Team[]): League {
-    return new League(this.id, this.name, teams);
+    return new League(this.id, this.name, teams, this.sortingStrategy);
+  }
+
+  /**
+   * Change the sorting strategy
+   */
+  withSortingStrategy(strategy: string): League {
+    return new League(this.id, this.name, this.teams, strategy);
   }
 }

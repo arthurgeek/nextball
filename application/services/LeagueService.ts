@@ -2,12 +2,15 @@ import { Standing } from '@/domain/entities/Standing';
 import { Team } from '@/domain/entities/Team';
 import { Match } from '@/domain/entities/Match';
 import { Form } from '@/domain/value-objects/Form';
+import { StandingSorter } from '../strategies/StandingSorter';
 
 /**
- * LeagueService handles league standings calculations and tiebreaker logic.
+ * LeagueService handles league standings calculations.
+ * Uses the Strategy pattern for flexible sorting rules.
  * Pure business logic - no framework dependencies.
  */
 export class LeagueService {
+  constructor(private readonly sorters: Map<string, StandingSorter>) {}
   /**
    * Initialize standings for all teams in a league
    */
@@ -64,40 +67,20 @@ export class LeagueService {
   }
 
   /**
-   * Sort standings by:
-   * 1. Points (descending)
-   * 2. Goal Difference (descending)
-   * 3. Goals For (descending)
-   * 4. Team name (alphabetical) as final tiebreaker
-   *
-   * Also updates position and previous position for each standing.
+   * Sort standings using the specified strategy.
+   * Defaults to 'premier-league' if strategy not found.
    */
-  sortStandings(standings: Standing[]): Standing[] {
-    // Sort by tiebreaker rules
-    const sorted = [...standings].sort((a, b) => {
-      // 1. Points
-      if (a.getPoints() !== b.getPoints()) {
-        return b.getPoints() - a.getPoints();
-      }
-
-      // 2. Goal Difference
-      if (a.getGoalDifference() !== b.getGoalDifference()) {
-        return b.getGoalDifference() - a.getGoalDifference();
-      }
-
-      // 3. Goals For
-      if (a.getGoalsFor() !== b.getGoalsFor()) {
-        return b.getGoalsFor() - a.getGoalsFor();
-      }
-
-      // 4. Team name (alphabetical)
-      return a.getTeam().getName().localeCompare(b.getTeam().getName());
-    });
-
-    // Update positions
-    return sorted.map((standing, index) =>
-      standing.withPosition(index + 1, standing.getPosition() || index + 1)
-    );
+  sortStandings(
+    standings: Standing[],
+    strategyName: string = 'premier-league'
+  ): Standing[] {
+    const sorter = this.sorters.get(strategyName);
+    if (!sorter) {
+      throw new Error(
+        `Unknown sorting strategy: ${strategyName}. Available: ${Array.from(this.sorters.keys()).join(', ')}`
+      );
+    }
+    return sorter.sort(standings);
   }
 
   /**
@@ -106,11 +89,12 @@ export class LeagueService {
    */
   determineChampion(
     standings: Standing[],
-    roundsRemaining: number
+    roundsRemaining: number,
+    strategyName: string = 'premier-league'
   ): string | undefined {
     if (standings.length === 0) return undefined;
 
-    const sorted = this.sortStandings(standings);
+    const sorted = this.sortStandings(standings, strategyName);
     const leader = sorted[0];
     const leaderPoints = leader.getPoints();
 
@@ -135,8 +119,11 @@ export class LeagueService {
   /**
    * Get the current leader (team in 1st place)
    */
-  getLeader(standings: Standing[]): Standing | undefined {
-    const sorted = this.sortStandings(standings);
+  getLeader(
+    standings: Standing[],
+    strategyName: string = 'premier-league'
+  ): Standing | undefined {
+    const sorted = this.sortStandings(standings, strategyName);
     return sorted[0];
   }
 

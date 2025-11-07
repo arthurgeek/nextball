@@ -20,10 +20,18 @@ export class LeagueCoordinator {
   /**
    * Create a new season for a league
    */
-  createSeason(league: League, year: number): Season {
-    // Generate all fixtures for the season
+  createSeason(
+    league: League,
+    year: number,
+    fixtureGenerationStrategy?: string
+  ): Season {
+    // Use fixture generation strategy from parameter or default
+    const strategy = fixtureGenerationStrategy ?? 'round-robin';
+
+    // Generate all fixtures for the season using the specified strategy
     const rounds = this.seasonSimulationService.generateFixtures(
-      league.getTeams()
+      league.getTeams(),
+      strategy
     );
 
     // Initialize standings
@@ -38,6 +46,7 @@ export class LeagueCoordinator {
       rounds,
       standings,
       currentRound: 0,
+      fixtureGenerationStrategy: strategy,
     });
   }
 
@@ -74,15 +83,19 @@ export class LeagueCoordinator {
       );
     }
 
-    // Sort standings
-    updatedStandings = this.leagueService.sortStandings(updatedStandings);
+    // Sort standings using the league's sorting strategy
+    const sortingStrategy = season.getLeague().getSortingStrategy();
+    updatedStandings = this.leagueService.sortStandings(
+      updatedStandings,
+      sortingStrategy
+    );
 
     // Check for champion
-    const remainingRounds =
-      season.getTotalRounds() - currentRoundNumber;
+    const remainingRounds = season.getTotalRounds() - currentRoundNumber;
     const championId = this.leagueService.determineChampion(
       updatedStandings,
-      remainingRounds
+      remainingRounds,
+      sortingStrategy
     );
 
     // Update season

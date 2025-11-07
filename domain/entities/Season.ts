@@ -17,6 +17,7 @@ interface CreateSeasonProps {
   standings?: Standing[];
   currentRound?: number;
   championId?: string;
+  fixtureGenerationStrategy?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export class Season {
     private readonly rounds: Round[],
     private readonly standings: Standing[],
     private readonly currentRound: number,
+    private readonly fixtureGenerationStrategy: string,
     private readonly championId?: string
   ) {}
 
@@ -48,6 +50,7 @@ export class Season {
       props.rounds ?? [],
       props.standings ?? [],
       props.currentRound ?? 0,
+      props.fixtureGenerationStrategy ?? 'round-robin',
       props.championId
     );
   }
@@ -84,6 +87,10 @@ export class Season {
     return this.championId;
   }
 
+  getFixtureGenerationStrategy(): string {
+    return this.fixtureGenerationStrategy;
+  }
+
   getTotalRounds(): number {
     return this.league.getTotalRounds();
   }
@@ -105,6 +112,7 @@ export class Season {
       rounds,
       this.standings,
       this.currentRound,
+      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -117,6 +125,7 @@ export class Season {
       this.rounds,
       standings,
       this.currentRound,
+      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -129,6 +138,7 @@ export class Season {
       this.rounds,
       this.standings,
       currentRound,
+      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -141,6 +151,7 @@ export class Season {
       this.rounds,
       this.standings,
       this.currentRound,
+      this.fixtureGenerationStrategy,
       championId
     );
   }
@@ -159,6 +170,23 @@ export class Season {
       updatedRounds,
       this.standings,
       this.currentRound,
+      this.fixtureGenerationStrategy,
+      this.championId
+    );
+  }
+
+  /**
+   * Change the fixture generation strategy
+   */
+  withFixtureGenerationStrategy(strategy: string): Season {
+    return new Season(
+      this.id,
+      this.year,
+      this.league,
+      this.rounds,
+      this.standings,
+      this.currentRound,
+      strategy,
       this.championId
     );
   }

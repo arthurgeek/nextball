@@ -26,6 +26,7 @@ export interface SerializedSeason {
   league: {
     id: string;
     name: string;
+    sortingStrategy: string;
     teams: {
       id: string;
       name: string;
@@ -57,6 +58,7 @@ export interface SerializedSeason {
     previousPosition: number;
   }[];
   currentRound: number;
+  fixtureGenerationStrategy: string;
   championId?: string;
 }
 
@@ -77,6 +79,7 @@ export class LeaguePersistenceService {
       league: {
         id: league.getId(),
         name: league.getName(),
+        sortingStrategy: league.getSortingStrategy(),
         teams: teams.map((team) => ({
           id: team.getId(),
           name: team.getName(),
@@ -110,6 +113,7 @@ export class LeaguePersistenceService {
         previousPosition: standing.getPreviousPosition(),
       })),
       currentRound: season.getCurrentRound(),
+      fixtureGenerationStrategy: season.getFixtureGenerationStrategy(),
       championId: season.getChampionId(),
     };
   }
@@ -134,6 +138,7 @@ export class LeaguePersistenceService {
       id: data.league.id,
       name: data.league.name,
       teams,
+      sortingStrategy: data.league.sortingStrategy,
     });
 
     // Reconstruct rounds with matches
@@ -189,6 +194,7 @@ export class LeaguePersistenceService {
       rounds,
       standings,
       currentRound: data.currentRound,
+      fixtureGenerationStrategy: data.fixtureGenerationStrategy,
       championId: data.championId,
     });
   }
