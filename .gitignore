@@ -35,3 +35,10 @@ next-env.d.ts
 
 # vitest
 .vitest
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
