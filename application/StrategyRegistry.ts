@@ -1,7 +1,6 @@
 import type { StandingSorter } from './strategies/standings/StandingSorter';
 import type { FixtureGenerator } from './strategies/fixtures/FixtureGenerator';
 import { PointsGoalDifferenceSorter } from './strategies/standings/PointsGoalDifferenceSorter';
-import { PointsHeadToHeadSorter } from './strategies/standings/PointsHeadToHeadSorter';
 import { PointsWinsSorter } from './strategies/standings/PointsWinsSorter';
 import { DoubleRoundRobinGenerator } from './strategies/fixtures/DoubleRoundRobinGenerator';
 import { SingleRoundRobinGenerator } from './strategies/fixtures/SingleRoundRobinGenerator';
@@ -30,7 +29,6 @@ class StrategyRegistryClass {
   constructor() {
     // Register built-in strategies
     this.registerSorter('points-goal-difference', PointsGoalDifferenceSorter);
-    this.registerSorter('points-head-to-head', PointsHeadToHeadSorter);
     this.registerSorter('points-wins', PointsWinsSorter);
 
     this.registerGenerator('double-round-robin', DoubleRoundRobinGenerator);

@@ -197,7 +197,6 @@ test.describe('Strategy Selection', () => {
 
     // Should have options for different sorting strategies
     await expect(sorterSelect.locator('option:has-text("Points Goal Difference")')).toBeVisible();
-    await expect(sorterSelect.locator('option:has-text("Points Head To Head")')).toBeVisible();
     await expect(sorterSelect.locator('option:has-text("Points Wins")')).toBeVisible();
   });
 

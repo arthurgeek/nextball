@@ -36,7 +36,6 @@ describe('StrategyRegistry - Built-in Strategies', () => {
   it('should have built-in standing sorters registered', () => {
     // Built-in sorters should be available
     expect(() => StrategyRegistry.createSorter('points-goal-difference')).not.toThrow();
-    expect(() => StrategyRegistry.createSorter('points-head-to-head')).not.toThrow();
     expect(() => StrategyRegistry.createSorter('points-wins')).not.toThrow();
   });
 
@@ -196,11 +195,10 @@ describe('StrategyRegistry - Listing Available Strategies', () => {
     const sorters = StrategyRegistry.listSorters();
 
     // Should include built-in sorters
-    expect(sorters.length).toBeGreaterThanOrEqual(3);
+    expect(sorters.length).toBeGreaterThanOrEqual(2);
 
     const sorterNames = sorters.map((s) => s.name);
     expect(sorterNames).toContain('points-goal-difference');
-    expect(sorterNames).toContain('points-head-to-head');
     expect(sorterNames).toContain('points-wins');
   });
 
@@ -268,9 +266,9 @@ describe('StrategyRegistry - Listing Available Strategies', () => {
     const pgdSorter = sorters.find((s) => s.name === 'points-goal-difference');
     expect(pgdSorter?.displayName).toMatch(/Points.*Goal.*Difference/i);
 
-    // Points-head-to-head should have a readable display name
-    const hthSorter = sorters.find((s) => s.name === 'points-head-to-head');
-    expect(hthSorter?.displayName).toMatch(/Points.*Head.*Head/i);
+    // Points-wins should have a readable display name
+    const winsSorter = sorters.find((s) => s.name === 'points-wins');
+    expect(winsSorter?.displayName).toMatch(/Points.*Wins/i);
   });
 
   it('should return empty array if no strategies registered (hypothetical)', () => {
