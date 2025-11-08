@@ -3,6 +3,7 @@ import { MatchSimulationService } from '@/application/services/MatchSimulationSe
 import { Match } from '@/domain/entities/Match';
 import { Team } from '@/domain/entities/Team';
 import { Strength } from '@/domain/value-objects/Strength';
+import { Form } from '@/domain/value-objects/Form';
 
 describe('MatchSimulationService', () => {
   let service: MatchSimulationService;
@@ -332,6 +333,83 @@ describe('MatchSimulationService', () => {
       expect(strongWins).toBeGreaterThan(weakWins);
 
       // There should be some draws
+      expect(draws).toBeGreaterThan(0);
+    });
+  });
+
+  describe('form impact', () => {
+    it('should work without form (backward compatibility)', () => {
+      const result = service.simulate(match);
+      expect(result.hasResult()).toBe(true);
+    });
+
+    it('should boost team performance with good form', () => {
+      const simulations = 1000;
+      let winsWithGoodForm = 0;
+      let winsWithNeutralForm = 0;
+
+      const goodForm = Form.create({ results: ['W', 'W', 'W', 'D', 'D'] }); // 0.6
+
+      for (let i = 0; i < simulations; i++) {
+        // Home team with good form vs away team
+        const resultGoodForm = service.simulate(match, goodForm, undefined);
+        if (resultGoodForm.getResult()?.isHomeWin()) winsWithGoodForm++;
+
+        // Home team with neutral form vs away team
+        const resultNeutralForm = service.simulate(match, undefined, undefined);
+        if (resultNeutralForm.getResult()?.isHomeWin()) winsWithNeutralForm++;
+      }
+
+      // Good form should lead to more wins
+      expect(winsWithGoodForm).toBeGreaterThan(winsWithNeutralForm);
+    });
+
+    it('should decrease team performance with poor form', () => {
+      const simulations = 1000;
+      let winsWithPoorForm = 0;
+      let winsWithNeutralForm = 0;
+
+      const poorForm = Form.create({ results: ['L', 'L', 'L', 'L', 'D'] }); // -0.8
+
+      for (let i = 0; i < simulations; i++) {
+        // Home team with poor form vs away team
+        const resultPoorForm = service.simulate(match, poorForm, undefined);
+        if (resultPoorForm.getResult()?.isHomeWin()) winsWithPoorForm++;
+
+        // Home team with neutral form vs away team
+        const resultNeutralForm = service.simulate(match, undefined, undefined);
+        if (resultNeutralForm.getResult()?.isHomeWin()) winsWithNeutralForm++;
+      }
+
+      // Poor form should lead to fewer wins
+      expect(winsWithPoorForm).toBeLessThan(winsWithNeutralForm);
+    });
+
+    it('should apply form to both teams independently', () => {
+      const simulations = 1000;
+      let homeWins = 0;
+      let awayWins = 0;
+      let draws = 0;
+
+      const homeGoodForm = Form.create({ results: ['W', 'W', 'W', 'W', 'W'] }); // 1.0
+      const awayGoodForm = Form.create({ results: ['W', 'W', 'W', 'W', 'W'] }); // 1.0
+
+      for (let i = 0; i < simulations; i++) {
+        const result = service.simulate(match, homeGoodForm, awayGoodForm);
+        const matchResult = result.getResult();
+
+        if (matchResult?.isHomeWin()) homeWins++;
+        else if (matchResult?.isAwayWin()) awayWins++;
+        else draws++;
+      }
+
+      // Both teams have perfect form, so home advantage should still apply
+      // but not as dominantly as without form since away is also boosted
+      expect(homeWins).toBeGreaterThan(awayWins);
+
+      // All three outcomes should be possible
+      expect(homeWins).toBeGreaterThan(0);
+      expect(awayWins).toBeGreaterThan(0);
       expect(draws).toBeGreaterThan(0);
     });
   });

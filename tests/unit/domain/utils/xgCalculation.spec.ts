@@ -85,5 +85,75 @@ describe('xgCalculation', () => {
         expect(homeXgNext).toBeGreaterThan(homeXgCurrent);
       }
     });
+
+    it('should default formScore to 0 when not provided', () => {
+      const xgWithoutForm = calculateBaseXG(75, false);
+      const xgWithNeutralForm = calculateBaseXG(75, false, 0);
+      expect(xgWithoutForm).toBe(xgWithNeutralForm);
+    });
+
+    it('should increase xG for teams with positive form', () => {
+      const strength = 75;
+      const xgNeutralForm = calculateBaseXG(strength, false, 0);
+      const xgGoodForm = calculateBaseXG(strength, false, 0.6); // 3W 2D
+      const xgPerfectForm = calculateBaseXG(strength, false, 1.0); // 5W
+
+      expect(xgGoodForm).toBeGreaterThan(xgNeutralForm);
+      expect(xgPerfectForm).toBeGreaterThan(xgGoodForm);
+    });
+
+    it('should decrease xG for teams with negative form', () => {
+      const strength = 75;
+      const xgNeutralForm = calculateBaseXG(strength, false, 0);
+      const xgPoorForm = calculateBaseXG(strength, false, -0.4); // 1W 3L 1D
+      const xgTerribleForm = calculateBaseXG(strength, false, -1.0); // 5L
+
+      expect(xgPoorForm).toBeLessThan(xgNeutralForm);
+      expect(xgTerribleForm).toBeLessThan(xgPoorForm);
+    });
+
+    it('should apply form impact consistently across different strength levels', () => {
+      const formScore = 0.6; // Good form
+
+      const weakNeutral = calculateBaseXG(30, false, 0);
+      const weakGoodForm = calculateBaseXG(30, false, formScore);
+
+      const midNeutral = calculateBaseXG(70, false, 0);
+      const midGoodForm = calculateBaseXG(70, false, formScore);
+
+      // Both should see a boost from form
+      expect(weakGoodForm).toBeGreaterThan(weakNeutral);
+      expect(midGoodForm).toBeGreaterThan(midNeutral);
+
+      // Form impact should be meaningful but not overwhelming
+      const weakFormBoost = (weakGoodForm - weakNeutral) / weakNeutral;
+      const midFormBoost = (midGoodForm - midNeutral) / midNeutral;
+
+      expect(weakFormBoost).toBeGreaterThan(0.03); // At least 3% boost
+      expect(midFormBoost).toBeGreaterThan(0.03);
+      expect(weakFormBoost).toBeLessThan(0.30); // At most 30% boost
+      expect(midFormBoost).toBeLessThan(0.30);
+    });
+
+    it('should combine form with home advantage correctly', () => {
+      const strength = 75;
+      const goodForm = 0.8;
+
+      const awayNeutralForm = calculateBaseXG(strength, false, 0);
+      const homeNeutralForm = calculateBaseXG(strength, true, 0);
+      const awayGoodForm = calculateBaseXG(strength, false, goodForm);
+      const homeGoodForm = calculateBaseXG(strength, true, goodForm);
+
+      // Home advantage exists
+      expect(homeNeutralForm).toBeGreaterThan(awayNeutralForm);
+
+      // Form boosts both home and away
+      expect(awayGoodForm).toBeGreaterThan(awayNeutralForm);
+      expect(homeGoodForm).toBeGreaterThan(homeNeutralForm);
+
+      // Home + good form should be highest
+      expect(homeGoodForm).toBeGreaterThan(homeNeutralForm);
+      expect(homeGoodForm).toBeGreaterThan(awayGoodForm);
+    });
   });
 });
