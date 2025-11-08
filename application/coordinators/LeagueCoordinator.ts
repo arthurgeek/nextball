@@ -26,7 +26,7 @@ export class LeagueCoordinator {
     fixtureGenerationStrategy?: string
   ): Season {
     // Use fixture generation strategy from parameter or default
-    const strategy = fixtureGenerationStrategy ?? 'round-robin';
+    const strategy = fixtureGenerationStrategy ?? 'double-round-robin';
 
     // Generate all fixtures for the season using the specified strategy
     const rounds = this.seasonSimulationService.generateFixtures(

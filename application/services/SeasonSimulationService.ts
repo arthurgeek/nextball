@@ -1,6 +1,6 @@
 import { Team } from '@/domain/entities/Team';
 import { Round } from '@/domain/value-objects/Round';
-import { FixtureGenerator } from '../strategies/FixtureGenerator';
+import { FixtureGenerator } from '../strategies/fixtures/FixtureGenerator';
 
 /**
  * SeasonSimulationService handles fixture generation for league seasons.
@@ -11,11 +11,11 @@ export class SeasonSimulationService {
 
   /**
    * Generate all fixtures using the specified strategy.
-   * Defaults to 'round-robin' if strategy not found.
+   * Defaults to 'double-round-robin' (home and away) if not specified.
    */
   generateFixtures(
     teams: Team[],
-    strategyName: string = 'round-robin'
+    strategyName: string = 'double-round-robin'
   ): Round[] {
     const generator = this.generators.get(strategyName);
     if (!generator) {

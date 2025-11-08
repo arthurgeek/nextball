@@ -3,18 +3,13 @@ import { LeagueService } from '@/application/services/LeagueService';
 import { SeasonSimulationService } from '@/application/services/SeasonSimulationService';
 import { LeaguePersistenceService } from '@/application/services/LeaguePersistenceService';
 import { LeagueCoordinator } from '@/application/coordinators/LeagueCoordinator';
-import {
-  PremierLeagueSorter,
-  LaLigaSorter,
-  MLSSorter,
-  type StandingSorter,
-} from '@/application/strategies/StandingSorter';
-import {
-  RoundRobinGenerator,
-  SingleRoundRobinGenerator,
-  KnockoutGenerator,
-  type FixtureGenerator,
-} from '@/application/strategies/FixtureGenerator';
+import { type StandingSorter } from '@/application/strategies/standings/StandingSorter';
+import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
+import { PointsHeadToHeadSorter } from '@/application/strategies/standings/PointsHeadToHeadSorter';
+import { PointsWinsSorter } from '@/application/strategies/standings/PointsWinsSorter';
+import { type FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
+import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
+import { SingleRoundRobinGenerator } from '@/application/strategies/fixtures/SingleRoundRobinGenerator';
 
 /**
  * Simple manual dependency injection container
@@ -34,9 +29,9 @@ let fixtureGenerators: Map<string, FixtureGenerator> | null = null;
 function getStandingSorters(): Map<string, StandingSorter> {
   if (!standingSorters) {
     standingSorters = new Map();
-    standingSorters.set('premier-league', new PremierLeagueSorter());
-    standingSorters.set('la-liga', new LaLigaSorter());
-    standingSorters.set('mls', new MLSSorter());
+    standingSorters.set('points-goal-difference', new PointsGoalDifferenceSorter());
+    standingSorters.set('points-head-to-head', new PointsHeadToHeadSorter());
+    standingSorters.set('points-wins', new PointsWinsSorter());
   }
   return standingSorters;
 }
@@ -44,9 +39,8 @@ function getStandingSorters(): Map<string, StandingSorter> {
 function getFixtureGenerators(): Map<string, FixtureGenerator> {
   if (!fixtureGenerators) {
     fixtureGenerators = new Map();
-    fixtureGenerators.set('round-robin', new RoundRobinGenerator());
+    fixtureGenerators.set('double-round-robin', new DoubleRoundRobinGenerator());
     fixtureGenerators.set('single-round-robin', new SingleRoundRobinGenerator());
-    fixtureGenerators.set('knockout', new KnockoutGenerator());
   }
   return fixtureGenerators;
 }

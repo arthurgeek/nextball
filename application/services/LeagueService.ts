@@ -2,7 +2,7 @@ import { Standing } from '@/domain/entities/Standing';
 import { Team } from '@/domain/entities/Team';
 import { Match } from '@/domain/entities/Match';
 import { Form } from '@/domain/value-objects/Form';
-import { StandingSorter } from '../strategies/StandingSorter';
+import { StandingSorter } from '../strategies/standings/StandingSorter';
 
 /**
  * LeagueService handles league standings calculations.
@@ -68,11 +68,11 @@ export class LeagueService {
 
   /**
    * Sort standings using the specified strategy.
-   * Defaults to 'premier-league' if strategy not found.
+   * Defaults to 'points-goal-difference' if strategy not found.
    */
   sortStandings(
     standings: Standing[],
-    strategyName: string = 'premier-league'
+    strategyName: string = 'points-goal-difference'
   ): Standing[] {
     const sorter = this.sorters.get(strategyName);
     if (!sorter) {
@@ -90,7 +90,7 @@ export class LeagueService {
   determineChampion(
     standings: Standing[],
     roundsRemaining: number,
-    strategyName: string = 'premier-league'
+    strategyName: string = 'points-goal-difference'
   ): string | undefined {
     if (standings.length === 0) return undefined;
 
@@ -121,7 +121,7 @@ export class LeagueService {
    */
   getLeader(
     standings: Standing[],
-    strategyName: string = 'premier-league'
+    strategyName: string = 'points-goal-difference'
   ): Standing | undefined {
     const sorted = this.sortStandings(standings, strategyName);
     return sorted[0];
