@@ -3,7 +3,6 @@ import { StrategyRegistry } from '@/application/StrategyRegistry';
 import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
 import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
 import type { Standing } from '@/domain/entities/Standing';
-import type { Team } from '@/domain/entities/Team';
 import type { Round } from '@/domain/value-objects/Round';
 
 // Mock custom sorter for testing
@@ -28,7 +27,7 @@ class MockCustomGenerator implements FixtureGenerator {
     return teamCount; // Custom logic
   }
 
-  generateFixtures(_teams: Team[]): Round[] {
+  generateFixtures(): Round[] {
     return []; // Simplified for testing
   }
 }

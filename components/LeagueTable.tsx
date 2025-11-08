@@ -87,7 +87,7 @@ export function LeagueTable({ season }: LeagueTableProps) {
                 </td>
                 <td className="text-center font-bold">{points}</td>
                 <td className="text-center">
-                  <FormDisplay form={standing.form} season={season} />
+                  <FormDisplay form={standing.form} />
                 </td>
               </tr>
             );
@@ -101,13 +101,7 @@ export function LeagueTable({ season }: LeagueTableProps) {
 /**
  * Display form as colored dots with tooltips
  */
-function FormDisplay({
-  form,
-  season,
-}: {
-  form: ('W' | 'D' | 'L')[];
-  season: SerializedSeason;
-}) {
+function FormDisplay({ form }: { form: ('W' | 'D' | 'L')[] }) {
   if (form.length === 0) {
     return <span className="text-xs opacity-50">-</span>;
   }

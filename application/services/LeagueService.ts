@@ -76,6 +76,7 @@ export class LeagueService {
   /**
    * Determine if a team has mathematically won the championship.
    * A team is champion if their points total cannot be caught by any other team.
+   * When roundsRemaining = 0, always returns the leader (tiebreakers already applied).
    */
   determineChampion(
     standings: Standing[],
@@ -86,6 +87,12 @@ export class LeagueService {
 
     const sorted = this.sortStandings(standings, sorter);
     const leader = sorted[0];
+
+    // If no rounds remaining, season is complete - leader is champion
+    if (roundsRemaining === 0) {
+      return leader.getTeam().getId();
+    }
+
     const leaderPoints = leader.getPoints();
 
     // Maximum points any other team can get

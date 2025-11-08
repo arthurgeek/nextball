@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SeasonOrchestrator } from '@/application/services/SeasonOrchestrator';
 import { LeagueCoordinator } from '@/application/coordinators/LeagueCoordinator';
-import { LeaguePersistenceService, type SerializedSeason } from '@/application/services/LeaguePersistenceService';
+import { LeaguePersistenceService } from '@/application/services/LeaguePersistenceService';
 import { MatchSimulationService } from '@/application/services/MatchSimulationService';
 import { LeagueService } from '@/application/services/LeagueService';
 import { SeasonSimulationService } from '@/application/services/SeasonSimulationService';
@@ -19,6 +19,17 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
   let league: League;
 
   beforeEach(() => {
+    // Mock localStorage for browser environment simulation
+    const localStorageMock = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      length: 0,
+      key: vi.fn(() => null),
+    };
+    global.localStorage = localStorageMock as Storage;
+
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
     const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
@@ -70,7 +81,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
     const saveSpy = vi.spyOn(persistence, 'saveChampionship');
 
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator);
     let serialized = persistence.serializeSeason(season);
 
     const totalRounds = season.getRounds().length;

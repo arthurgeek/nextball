@@ -164,7 +164,6 @@ describe('MatchSimulationService', () => {
       const simulations = 1000; // Increased sample size for statistical reliability
       let strongWins = 0;
       let weakWins = 0;
-      let draws = 0;
 
       // Run equal number of home and away matches to remove home advantage bias
       for (let i = 0; i < simulations; i++) {
@@ -178,7 +177,6 @@ describe('MatchSimulationService', () => {
 
         if (homeResult.getResult()?.isHomeWin()) strongWins++;
         else if (homeResult.getResult()?.isAwayWin()) weakWins++;
-        else draws++;
 
         // Strong team away
         const strongAwayMatch = Match.create({
@@ -190,7 +188,6 @@ describe('MatchSimulationService', () => {
 
         if (awayResult.getResult()?.isAwayWin()) strongWins++;
         else if (awayResult.getResult()?.isHomeWin()) weakWins++;
-        else draws++;
       }
 
       const totalMatches = simulations * 2;
