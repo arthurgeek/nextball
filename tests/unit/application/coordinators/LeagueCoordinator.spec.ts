@@ -342,4 +342,36 @@ describe('LeagueCoordinator - Utility Methods', () => {
 
     expect(coordinator.canAdvance(season)).toBe(false);
   });
+
+  describe('error handling', () => {
+    it('should throw error when trying to simulate with no more rounds', () => {
+      const generator = new DoubleRoundRobinGenerator();
+      let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+
+      // Simulate all rounds
+      season = coordinator.simulateRemaining(season);
+
+      // Try to simulate another round
+      expect(() => {
+        coordinator.simulateNextRound(season);
+      }).toThrow('No more rounds to simulate');
+    });
+
+    it('should throw error when trying to simulate already completed round', () => {
+      const generator = new DoubleRoundRobinGenerator();
+      let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+
+      // Simulate first round
+      season = coordinator.simulateNextRound(season);
+
+      // Manually set current round back to 1 (which is now complete)
+      const firstRound = season.getRound(1)!;
+      const seasonWithResetRound = season.withRounds(season.getRounds()).withCurrentRound(0);
+
+      // Try to simulate the already-completed round
+      expect(() => {
+        coordinator.simulateNextRound(seasonWithResetRound);
+      }).toThrow('Round already completed');
+    });
+  });
 });
