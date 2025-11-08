@@ -10,7 +10,7 @@ test.describe('Match Simulation', () => {
     await expect(page.getByRole('heading', { name: 'NextBall', level: 1 })).toBeVisible();
 
     // Check subtitle
-    await expect(page.getByText('Football Match Simulator')).toBeVisible();
+    await expect(page.getByText('Football Management Simulator')).toBeVisible();
 
     // Check form is present
     await expect(page.getByRole('heading', { name: 'Set Up Match' })).toBeVisible();
