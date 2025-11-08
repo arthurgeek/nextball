@@ -208,6 +208,23 @@ export class Season {
   }
 
   /**
+   * Change the sorting strategy
+   */
+  withSorter(sorter: StandingSorter): Season {
+    return new Season(
+      this.id,
+      this.year,
+      this.league,
+      this.generator,
+      sorter,
+      this.rounds,
+      this.standings,
+      this.currentRound,
+      this.championId
+    );
+  }
+
+  /**
    * Advance to the next round
    */
   advanceRound(): Season {

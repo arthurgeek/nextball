@@ -7,6 +7,7 @@ import { Match } from '@/domain/entities/Match';
 import { Standing } from '@/domain/entities/Standing';
 import { Strength } from '@/domain/value-objects/Strength';
 import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
+import { PointsWinsSorter } from '@/application/strategies/standings/PointsWinsSorter';
 import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
 
 describe('Season - Creation', () => {
@@ -264,6 +265,39 @@ describe('Season - Immutability', () => {
     expect(newSeason).not.toBe(season);
     expect(newSeason.getChampionId()).toBe('team-1');
     expect(season.getChampionId()).toBeUndefined(); // Original unchanged
+  });
+
+  it('should return new instance with withSorter', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
+    const rounds: Round[] = [];
+    const standings = [Standing.create({ team: teams[0] })];
+
+    const season = Season.create({
+      id: 'season-1',
+      league,
+      year: 2025,
+      generator,
+      sorter,
+      rounds,
+      standings,
+    });
+
+    const newSorter = new PointsWinsSorter();
+    const newSeason = season.withSorter(newSorter);
+
+    expect(newSeason).not.toBe(season);
+    expect(newSeason.getSorter()).toBe(newSorter);
+    expect(season.getSorter()).toBe(sorter); // Original unchanged
   });
 });
 
