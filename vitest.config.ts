@@ -14,8 +14,10 @@ export default defineConfig({
       enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['domain/**', 'application/**', 'components/**', 'di/**', 'app/**'],
-      exclude: ['node_modules/', 'tests/', '**/*.spec.ts', '**/*.spec.tsx', '**/*.test.ts', 'app/layout.tsx', 'app/globals.css'],
+      // Only include domain + application layers (per CLAUDE.md: 100% coverage requirement)
+      // UI (app/, components/) and DI tested via E2E/integration
+      include: ['domain/**', 'application/**'],
+      exclude: ['node_modules/', 'tests/', '**/*.spec.ts', '**/*.spec.tsx', '**/*.test.ts'],
     },
   },
   resolve: {
