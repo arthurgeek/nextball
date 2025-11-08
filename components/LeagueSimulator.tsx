@@ -9,6 +9,7 @@ import {
   simulateNextRound,
 } from '@/app/actions';
 import type { SerializedSeason } from '@/application/services/LeaguePersistenceService';
+import { Icon } from '@iconify-icon/react';
 
 /**
  * Client Component managing league simulation state and interactions.
@@ -176,7 +177,10 @@ export function LeagueSimulator() {
             {loading ? (
               <span className="loading loading-spinner" />
             ) : (
-              'Start New Season'
+              <>
+                <Icon icon="lucide:play" width="20" height="20" />
+                Start New Season
+              </>
             )}
           </button>
         </div>
@@ -204,6 +208,7 @@ export function LeagueSimulator() {
             className="btn btn-sm btn-outline"
             onClick={() => setShowHistory(true)}
           >
+            <Icon icon="lucide:trophy" width="16" height="16" />
             Championship History
           </button>
           <button
@@ -216,6 +221,7 @@ export function LeagueSimulator() {
               }
             }}
           >
+            <Icon icon="lucide:refresh-cw" width="16" height="16" />
             New Season
           </button>
         </div>
@@ -228,7 +234,8 @@ export function LeagueSimulator() {
           onClick={handlePreviousRound}
           disabled={viewingRound <= 1}
         >
-          ← Previous
+          <Icon icon="lucide:chevron-left" width="16" height="16" />
+          Previous
         </button>
 
         <div className="flex items-center gap-4">
@@ -241,6 +248,7 @@ export function LeagueSimulator() {
               className="btn btn-sm btn-primary"
               onClick={handleGoToLatest}
             >
+              <Icon icon="lucide:fast-forward" width="16" height="16" />
               Go to Latest
             </button>
           )}
@@ -254,7 +262,10 @@ export function LeagueSimulator() {
               {loading ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
-                'Simulate Next Round'
+                <>
+                  <Icon icon="lucide:play" width="16" height="16" />
+                  Simulate Next Round
+                </>
               )}
             </button>
           )}
@@ -271,7 +282,8 @@ export function LeagueSimulator() {
           onClick={handleNextRound}
           disabled={viewingRound >= season.currentRound}
         >
-          Next →
+          Next
+          <Icon icon="lucide:chevron-right" width="16" height="16" />
         </button>
       </div>
 

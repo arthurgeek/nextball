@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Team } from './Team';
+import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
 
 const CreateLeagueSchema = z.object({
   id: z.string().min(1),
@@ -11,19 +12,20 @@ interface CreateLeagueProps {
   id: string;
   name: string;
   teams: Team[];
-  sortingStrategy?: string;
+  sorter: StandingSorter;
 }
 
 /**
  * League entity representing a football league with teams.
  * Immutable - use withXxx() methods to create updated instances.
+ * Holds a StandingSorter instance directly (not a string).
  */
 export class League {
   private constructor(
     private readonly id: string,
     private readonly name: string,
     private readonly teams: Team[],
-    private readonly sortingStrategy: string
+    private readonly sorter: StandingSorter
   ) {}
 
   static create(props: CreateLeagueProps): League {
@@ -32,7 +34,7 @@ export class League {
       props.id,
       props.name,
       props.teams,
-      props.sortingStrategy ?? 'premier-league'
+      props.sorter
     );
   }
 
@@ -56,8 +58,8 @@ export class League {
     return this.teams.find((team) => team.getId() === id);
   }
 
-  getSortingStrategy(): string {
-    return this.sortingStrategy;
+  getSorter(): StandingSorter {
+    return this.sorter;
   }
 
   /**
@@ -72,20 +74,20 @@ export class League {
    * Add a team to the league
    */
   withTeam(team: Team): League {
-    return new League(this.id, this.name, [...this.teams, team], this.sortingStrategy);
+    return new League(this.id, this.name, [...this.teams, team], this.sorter);
   }
 
   /**
    * Replace all teams
    */
   withTeams(teams: Team[]): League {
-    return new League(this.id, this.name, teams, this.sortingStrategy);
+    return new League(this.id, this.name, teams, this.sorter);
   }
 
   /**
    * Change the sorting strategy
    */
-  withSortingStrategy(strategy: string): League {
-    return new League(this.id, this.name, this.teams, strategy);
+  withSorter(sorter: StandingSorter): League {
+    return new League(this.id, this.name, this.teams, sorter);
   }
 }

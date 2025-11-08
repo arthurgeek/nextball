@@ -7,6 +7,8 @@ import { Match } from '@/domain/entities/Match';
 import { MatchResult } from '@/domain/value-objects/MatchResult';
 import { Strength } from '@/domain/value-objects/Strength';
 import { Form, FormResult } from '@/domain/value-objects/Form';
+import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
+import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
 
 /**
  * Championship record for a single season
@@ -66,6 +68,10 @@ export interface SerializedSeason {
  * LeaguePersistenceService handles serialization and persistence of league data.
  */
 export class LeaguePersistenceService {
+  constructor(
+    private readonly standingSorters: Map<string, StandingSorter>,
+    private readonly fixtureGenerators: Map<string, FixtureGenerator>
+  ) {}
   /**
    * Serialize a season to JSON-compatible format
    */
@@ -79,7 +85,7 @@ export class LeaguePersistenceService {
       league: {
         id: league.getId(),
         name: league.getName(),
-        sortingStrategy: league.getSortingStrategy(),
+        sortingStrategy: league.getSorter().getName(),
         teams: teams.map((team) => ({
           id: team.getId(),
           name: team.getName(),
@@ -113,7 +119,7 @@ export class LeaguePersistenceService {
         previousPosition: standing.getPreviousPosition(),
       })),
       currentRound: season.getCurrentRound(),
-      fixtureGenerationStrategy: season.getFixtureGenerationStrategy(),
+      fixtureGenerationStrategy: season.getGenerator().getName(),
       championId: season.getChampionId(),
     };
   }
@@ -133,12 +139,20 @@ export class LeaguePersistenceService {
 
     const teamMap = new Map(teams.map((team) => [team.getId(), team]));
 
+    // Map sorting strategy string to class instance
+    const sorter = this.standingSorters.get(data.league.sortingStrategy);
+    if (!sorter) {
+      throw new Error(
+        `Unknown sorting strategy: ${data.league.sortingStrategy}`
+      );
+    }
+
     // Reconstruct league
     const league = League.create({
       id: data.league.id,
       name: data.league.name,
       teams,
-      sortingStrategy: data.league.sortingStrategy,
+      sorter,
     });
 
     // Reconstruct rounds with matches
@@ -187,14 +201,24 @@ export class LeaguePersistenceService {
       });
     });
 
+    // Map fixture generation strategy string to class instance
+    const generator = this.fixtureGenerators.get(
+      data.fixtureGenerationStrategy
+    );
+    if (!generator) {
+      throw new Error(
+        `Unknown fixture generation strategy: ${data.fixtureGenerationStrategy}`
+      );
+    }
+
     return Season.create({
       id: data.id,
       year: data.year,
       league,
+      generator,
       rounds,
       standings,
       currentRound: data.currentRound,
-      fixtureGenerationStrategy: data.fixtureGenerationStrategy,
       championId: data.championId,
     });
   }

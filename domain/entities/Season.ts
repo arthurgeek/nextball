@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { League } from './League';
 import { Standing } from './Standing';
 import { Round } from '../value-objects/Round';
+import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
 
 const CreateSeasonSchema = z.object({
   id: z.string().min(1),
@@ -13,26 +14,27 @@ interface CreateSeasonProps {
   id: string;
   year: number;
   league: League;
+  generator: FixtureGenerator;
   rounds?: Round[];
   standings?: Standing[];
   currentRound?: number;
   championId?: string;
-  fixtureGenerationStrategy?: string;
 }
 
 /**
  * Season entity representing a league season with rounds and standings.
  * Immutable - use withXxx() methods to create updated instances.
+ * Holds a FixtureGenerator instance directly (not a string).
  */
 export class Season {
   private constructor(
     private readonly id: string,
     private readonly year: number,
     private readonly league: League,
+    private readonly generator: FixtureGenerator,
     private readonly rounds: Round[],
     private readonly standings: Standing[],
     private readonly currentRound: number,
-    private readonly fixtureGenerationStrategy: string,
     private readonly championId?: string
   ) {}
 
@@ -47,10 +49,10 @@ export class Season {
       props.id,
       props.year,
       props.league,
+      props.generator,
       props.rounds ?? [],
       props.standings ?? [],
       props.currentRound ?? 0,
-      props.fixtureGenerationStrategy ?? 'round-robin',
       props.championId
     );
   }
@@ -87,8 +89,8 @@ export class Season {
     return this.championId;
   }
 
-  getFixtureGenerationStrategy(): string {
-    return this.fixtureGenerationStrategy;
+  getGenerator(): FixtureGenerator {
+    return this.generator;
   }
 
   getTotalRounds(): number {
@@ -109,10 +111,10 @@ export class Season {
       this.id,
       this.year,
       this.league,
+      this.generator,
       rounds,
       this.standings,
       this.currentRound,
-      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -122,10 +124,10 @@ export class Season {
       this.id,
       this.year,
       this.league,
+      this.generator,
       this.rounds,
       standings,
       this.currentRound,
-      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -135,10 +137,10 @@ export class Season {
       this.id,
       this.year,
       this.league,
+      this.generator,
       this.rounds,
       this.standings,
       currentRound,
-      this.fixtureGenerationStrategy,
       this.championId
     );
   }
@@ -148,10 +150,10 @@ export class Season {
       this.id,
       this.year,
       this.league,
+      this.generator,
       this.rounds,
       this.standings,
       this.currentRound,
-      this.fixtureGenerationStrategy,
       championId
     );
   }
@@ -167,26 +169,26 @@ export class Season {
       this.id,
       this.year,
       this.league,
+      this.generator,
       updatedRounds,
       this.standings,
       this.currentRound,
-      this.fixtureGenerationStrategy,
       this.championId
     );
   }
 
   /**
-   * Change the fixture generation strategy
+   * Change the fixture generator
    */
-  withFixtureGenerationStrategy(strategy: string): Season {
+  withGenerator(generator: FixtureGenerator): Season {
     return new Season(
       this.id,
       this.year,
       this.league,
+      generator,
       this.rounds,
       this.standings,
       this.currentRound,
-      strategy,
       this.championId
     );
   }

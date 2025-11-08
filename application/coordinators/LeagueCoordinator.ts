@@ -4,6 +4,7 @@ import { Team } from '@/domain/entities/Team';
 import { MatchSimulationService } from '../services/MatchSimulationService';
 import { LeagueService } from '../services/LeagueService';
 import { SeasonSimulationService } from '../services/SeasonSimulationService';
+import type { FixtureGenerator } from '../strategies/fixtures/FixtureGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -18,20 +19,18 @@ export class LeagueCoordinator {
   ) {}
 
   /**
-   * Create a new season for a league
+   * Create a new season for a league.
+   * Pass a FixtureGenerator instance directly.
    */
   createSeason(
     league: League,
     year: number,
-    fixtureGenerationStrategy?: string
+    generator: FixtureGenerator
   ): Season {
-    // Use fixture generation strategy from parameter or default
-    const strategy = fixtureGenerationStrategy ?? 'double-round-robin';
-
-    // Generate all fixtures for the season using the specified strategy
+    // Generate all fixtures for the season using the provided generator
     const rounds = this.seasonSimulationService.generateFixtures(
       league.getTeams(),
-      strategy
+      generator
     );
 
     // Initialize standings
@@ -43,10 +42,10 @@ export class LeagueCoordinator {
       id: uuidv4(),
       year,
       league,
+      generator,
       rounds,
       standings,
       currentRound: 0,
-      fixtureGenerationStrategy: strategy,
     });
   }
 
@@ -84,10 +83,10 @@ export class LeagueCoordinator {
     }
 
     // Sort standings using the league's sorting strategy
-    const sortingStrategy = season.getLeague().getSortingStrategy();
+    const sorter = season.getLeague().getSorter();
     updatedStandings = this.leagueService.sortStandings(
       updatedStandings,
-      sortingStrategy
+      sorter
     );
 
     // Check for champion
@@ -95,7 +94,7 @@ export class LeagueCoordinator {
     const championId = this.leagueService.determineChampion(
       updatedStandings,
       remainingRounds,
-      sortingStrategy
+      sorter
     );
 
     // Update season

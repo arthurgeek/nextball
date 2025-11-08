@@ -9,6 +9,7 @@ import {
   getMatchSimulationService,
   getLeagueCoordinator,
   getLeaguePersistenceService,
+  getSeasonOrchestrator,
 } from '@/di/container';
 import type {
   SerializedSeason,
@@ -148,47 +149,30 @@ export async function createNewSeason(
     }),
   ];
 
+  const {PointsGoalDifferenceSorter} = await import('@/application/strategies/standings/PointsGoalDifferenceSorter');
+  const {DoubleRoundRobinGenerator} = await import('@/application/strategies/fixtures/DoubleRoundRobinGenerator');
+
   const league = League.create({
     id: uuidv4(),
     name: 'Premier League',
     teams,
+    sorter: new PointsGoalDifferenceSorter(),
   });
 
-  const season = coordinator.createSeason(league, year);
+  const season = coordinator.createSeason(league, year, new DoubleRoundRobinGenerator());
 
   return persistenceService.serializeSeason(season);
 }
 
 /**
- * Simulate the next round of matches
+ * Simulate the next round of matches.
+ * Thin server action - delegates to orchestrator.
  */
 export async function simulateNextRound(
   seasonData: SerializedSeason
 ): Promise<SerializedSeason> {
-  const coordinator = getLeagueCoordinator();
-  const persistenceService = getLeaguePersistenceService();
-
-  const season = persistenceService.deserializeSeason(seasonData);
-  const updatedSeason = coordinator.simulateNextRound(season);
-
-  // If season is complete and has a champion, save to history
-  if (updatedSeason.isComplete() && updatedSeason.hasChampion()) {
-    const championId = updatedSeason.getChampionId()!;
-    const champion = updatedSeason
-      .getLeague()
-      .getTeams()
-      .find((t) => t.getId() === championId);
-
-    if (champion) {
-      persistenceService.saveChampionship({
-        year: updatedSeason.getYear(),
-        teamId: championId,
-        teamName: champion.getName(),
-      });
-    }
-  }
-
-  return persistenceService.serializeSeason(updatedSeason);
+  const orchestrator = getSeasonOrchestrator();
+  return orchestrator.simulateNextRound(seasonData);
 }
 
 /**

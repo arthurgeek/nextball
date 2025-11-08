@@ -5,24 +5,14 @@ import { FixtureGenerator } from '../strategies/fixtures/FixtureGenerator';
 /**
  * SeasonSimulationService handles fixture generation for league seasons.
  * Uses the Strategy pattern for flexible tournament formats.
+ * Users can provide their own FixtureGenerator implementations.
  */
 export class SeasonSimulationService {
-  constructor(private readonly generators: Map<string, FixtureGenerator>) {}
-
   /**
-   * Generate all fixtures using the specified strategy.
-   * Defaults to 'double-round-robin' (home and away) if not specified.
+   * Generate all fixtures using the provided strategy.
+   * Pass any FixtureGenerator implementation directly.
    */
-  generateFixtures(
-    teams: Team[],
-    strategyName: string = 'double-round-robin'
-  ): Round[] {
-    const generator = this.generators.get(strategyName);
-    if (!generator) {
-      throw new Error(
-        `Unknown fixture generation strategy: ${strategyName}. Available: ${Array.from(this.generators.keys()).join(', ')}`
-      );
-    }
+  generateFixtures(teams: Team[], generator: FixtureGenerator): Round[] {
     return generator.generateFixtures(teams);
   }
 

@@ -8,9 +8,9 @@ import { StandingSorter } from '../strategies/standings/StandingSorter';
  * LeagueService handles league standings calculations.
  * Uses the Strategy pattern for flexible sorting rules.
  * Pure business logic - no framework dependencies.
+ * Users can provide their own StandingSorter implementations.
  */
 export class LeagueService {
-  constructor(private readonly sorters: Map<string, StandingSorter>) {}
   /**
    * Initialize standings for all teams in a league
    */
@@ -67,19 +67,10 @@ export class LeagueService {
   }
 
   /**
-   * Sort standings using the specified strategy.
-   * Defaults to 'points-goal-difference' if strategy not found.
+   * Sort standings using the provided strategy.
+   * Pass any StandingSorter implementation directly.
    */
-  sortStandings(
-    standings: Standing[],
-    strategyName: string = 'points-goal-difference'
-  ): Standing[] {
-    const sorter = this.sorters.get(strategyName);
-    if (!sorter) {
-      throw new Error(
-        `Unknown sorting strategy: ${strategyName}. Available: ${Array.from(this.sorters.keys()).join(', ')}`
-      );
-    }
+  sortStandings(standings: Standing[], sorter: StandingSorter): Standing[] {
     return sorter.sort(standings);
   }
 
@@ -90,11 +81,11 @@ export class LeagueService {
   determineChampion(
     standings: Standing[],
     roundsRemaining: number,
-    strategyName: string = 'points-goal-difference'
+    sorter: StandingSorter
   ): string | undefined {
     if (standings.length === 0) return undefined;
 
-    const sorted = this.sortStandings(standings, strategyName);
+    const sorted = this.sortStandings(standings, sorter);
     const leader = sorted[0];
     const leaderPoints = leader.getPoints();
 
@@ -119,11 +110,8 @@ export class LeagueService {
   /**
    * Get the current leader (team in 1st place)
    */
-  getLeader(
-    standings: Standing[],
-    strategyName: string = 'points-goal-difference'
-  ): Standing | undefined {
-    const sorted = this.sortStandings(standings, strategyName);
+  getLeader(standings: Standing[], sorter: StandingSorter): Standing | undefined {
+    const sorted = this.sortStandings(standings, sorter);
     return sorted[0];
   }
 

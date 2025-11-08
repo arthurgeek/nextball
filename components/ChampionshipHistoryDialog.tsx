@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@iconify-icon/react';
+
 interface ChampionshipHistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -76,6 +78,7 @@ export function ChampionshipHistoryDialog({
 
         <div className="modal-action">
           <button className="btn" onClick={onClose}>
+            <Icon icon="lucide:x" width="16" height="16" />
             Close
           </button>
         </div>
