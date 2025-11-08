@@ -1,6 +1,5 @@
 import { Season } from '@/domain/entities/Season';
 import { League } from '@/domain/entities/League';
-import { Team } from '@/domain/entities/Team';
 import { MatchSimulationService } from '../services/MatchSimulationService';
 import { LeagueService } from '../services/LeagueService';
 import { SeasonSimulationService } from '../services/SeasonSimulationService';

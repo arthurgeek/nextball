@@ -1,7 +1,6 @@
 import { Standing } from '@/domain/entities/Standing';
 import { Team } from '@/domain/entities/Team';
 import { Match } from '@/domain/entities/Match';
-import { Form } from '@/domain/value-objects/Form';
 import { StandingSorter } from '../strategies/standings/StandingSorter';
 
 /**

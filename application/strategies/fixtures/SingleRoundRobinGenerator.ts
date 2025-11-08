@@ -38,7 +38,7 @@ export class SingleRoundRobinGenerator implements FixtureGenerator {
     const isEven = teamCount % 2 === 0;
 
     // If odd number of teams, add a "bye" (represented as null)
-    const participants = isEven ? [...teams] : [...teams, null as any];
+    const participants: Array<Team | null> = isEven ? [...teams] : [...teams, null];
     const totalTeams = participants.length;
     const roundsPerHalf = totalTeams - 1;
 
