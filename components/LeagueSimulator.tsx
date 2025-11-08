@@ -106,11 +106,14 @@ export function LeagueSimulator() {
   const handleStartNewSeason = async () => {
     setLoading(true);
     try {
-      const currentYear = new Date().getFullYear();
-      const newSeason = await createNewSeason(currentYear);
+      // Increment year if there's an existing season, otherwise use current year
+      const year = season ? season.year + 1 : new Date().getFullYear();
+      const newSeason = await createNewSeason(year);
       setSeason(newSeason);
       // Set viewing round to 1 (first fixtures) since currentRound is 0
       setViewingRound(1);
+      // Reload championship history in case previous season was completed
+      await loadChampionshipStats();
     } catch (error) {
       console.error('Failed to create season:', error);
       alert('Failed to create new season');
