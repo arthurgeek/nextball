@@ -133,20 +133,20 @@ describe('Simulate button visibility after round completion', () => {
     const updatedSeason = createMockSeason(1);
     vi.mocked(simulateNextRound).mockResolvedValue(updatedSeason);
 
-    const { rerender } = render(<LeagueSimulator />);
+    render(<LeagueSimulator />);
 
     const simulateButton = screen.getByText('Simulate Next Round');
     fireEvent.click(simulateButton);
 
-    // Wait for state update
-    await vi.waitFor(() => {
+    // Wait for the simulation to complete and component to update
+    await waitFor(() => {
       expect(simulateNextRound).toHaveBeenCalled();
     });
 
-    rerender(<LeagueSimulator />);
-
-    // After simulation, button should still be visible for next round
-    expect(screen.getByText('Simulate Next Round')).toBeInTheDocument();
+    // Wait for the button to reappear after state update
+    await waitFor(() => {
+      expect(screen.getByText('Simulate Next Round')).toBeInTheDocument();
+    });
   });
 });
 
@@ -192,19 +192,20 @@ describe('Round results display after simulation', () => {
     const updatedSeason = createMockSeason(1);
     vi.mocked(simulateNextRound).mockResolvedValue(updatedSeason);
 
-    const { rerender } = render(<LeagueSimulator />);
+    render(<LeagueSimulator />);
 
     const simulateButton = screen.getByText('Simulate Next Round');
     fireEvent.click(simulateButton);
 
-    await vi.waitFor(() => {
+    // Wait for the simulation to complete and component to update
+    await waitFor(() => {
       expect(simulateNextRound).toHaveBeenCalled();
     });
 
-    rerender(<LeagueSimulator />);
-
-    // Should now show round 1 results
-    expect(screen.getByText('Round 1 Results')).toBeInTheDocument();
+    // Wait for the round 1 results to appear
+    await waitFor(() => {
+      expect(screen.getByText('Round 1 Results')).toBeInTheDocument();
+    });
   });
 });
 
