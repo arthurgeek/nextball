@@ -1,4 +1,5 @@
 import type { SerializedSeason } from '@/application/services/LeaguePersistenceService';
+import { FormResult } from '@/domain/value-objects/Form';
 
 interface LeagueTableProps {
   season: SerializedSeason;
@@ -101,7 +102,7 @@ export function LeagueTable({ season }: LeagueTableProps) {
 /**
  * Display form as colored dots with tooltips
  */
-function FormDisplay({ form }: { form: ('W' | 'D' | 'L')[] }) {
+function FormDisplay({ form }: { form: FormResult[] }) {
   if (form.length === 0) {
     return <span className="text-xs opacity-50">-</span>;
   }
@@ -110,9 +111,9 @@ function FormDisplay({ form }: { form: ('W' | 'D' | 'L')[] }) {
     <div className="flex gap-0.5 justify-center">
       {form.map((result, index) => {
         const colorClass =
-          result === 'W'
+          result === FormResult.WIN
             ? 'bg-success'
-            : result === 'D'
+            : result === FormResult.DRAW
               ? 'bg-warning'
               : 'bg-error';
 
@@ -120,7 +121,7 @@ function FormDisplay({ form }: { form: ('W' | 'D' | 'L')[] }) {
           <div
             key={index}
             className={`w-2 h-2 rounded-full ${colorClass}`}
-            title={result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}
+            title={result === FormResult.WIN ? 'Win' : result === FormResult.DRAW ? 'Draw' : 'Loss'}
           />
         );
       })}

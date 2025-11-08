@@ -1,7 +1,15 @@
 import { z } from 'zod';
 
-const FormResultSchema = z.enum(['W', 'D', 'L']);
-export type FormResult = z.infer<typeof FormResultSchema>;
+/**
+ * Enum representing a single match result for form tracking
+ */
+export enum FormResult {
+  WIN = 'W',
+  DRAW = 'D',
+  LOSS = 'L',
+}
+
+const FormResultSchema = z.nativeEnum(FormResult);
 
 interface CreateFormProps {
   results: FormResult[];
@@ -46,21 +54,21 @@ export class Form {
    * Get the number of wins in current form
    */
   getWins(): number {
-    return this.results.filter((r) => r === 'W').length;
+    return this.results.filter((r) => r === FormResult.WIN).length;
   }
 
   /**
    * Get the number of draws in current form
    */
   getDraws(): number {
-    return this.results.filter((r) => r === 'D').length;
+    return this.results.filter((r) => r === FormResult.DRAW).length;
   }
 
   /**
    * Get the number of losses in current form
    */
   getLosses(): number {
-    return this.results.filter((r) => r === 'L').length;
+    return this.results.filter((r) => r === FormResult.LOSS).length;
   }
 
   /**
@@ -68,8 +76,8 @@ export class Form {
    */
   getPoints(): number {
     return this.results.reduce((total, result) => {
-      if (result === 'W') return total + 3;
-      if (result === 'D') return total + 1;
+      if (result === FormResult.WIN) return total + 3;
+      if (result === FormResult.DRAW) return total + 1;
       return total;
     }, 0);
   }

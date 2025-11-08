@@ -231,7 +231,7 @@ describe('LeagueCoordinator - Season Completion', () => {
 
   it('should simulate all remaining rounds at once with simulateRemaining()', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getCurrentRound()).toBe(0);
 

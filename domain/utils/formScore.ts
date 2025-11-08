@@ -1,4 +1,5 @@
 import type { Form } from '@/domain/value-objects/Form';
+import { FormResult } from '@/domain/value-objects/Form';
 
 /**
  * Calculate a numeric form score from recent results
@@ -26,9 +27,9 @@ export function calculateFormScore(form?: Form): number {
 
   let score = 0;
   for (const result of results) {
-    if (result === 'W') score += 1;
-    else if (result === 'L') score -= 1;
-    // 'D' adds 0
+    if (result === FormResult.WIN) score += 1;
+    else if (result === FormResult.LOSS) score -= 1;
+    // FormResult.DRAW adds 0
   }
 
   // Average over number of results

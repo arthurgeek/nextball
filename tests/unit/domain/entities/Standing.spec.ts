@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Standing } from '@/domain/entities/Standing';
 import { Team } from '@/domain/entities/Team';
 import { Strength } from '@/domain/value-objects/Strength';
-import { Form } from '@/domain/value-objects/Form';
+import { Form, FormResult } from '@/domain/value-objects/Form';
 
 describe('Standing - Creation', () => {
   it('should create standing with only team', () => {
@@ -150,7 +150,7 @@ describe('Standing - Immutability', () => {
     const form1 = Form.create();
     const standing = Standing.create({ team, form: form1 });
 
-    const form2 = Form.create().addResult('W');
+    const form2 = Form.create().addResult(FormResult.WIN);
     const newStanding = standing.withForm(form2);
 
     expect(newStanding).not.toBe(standing);

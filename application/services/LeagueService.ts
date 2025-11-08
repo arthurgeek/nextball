@@ -2,6 +2,7 @@ import { Standing } from '@/domain/entities/Standing';
 import { Team } from '@/domain/entities/Team';
 import { Match } from '@/domain/entities/Match';
 import { StandingSorter } from '../strategies/standings/StandingSorter';
+import { FormResult } from '@/domain/value-objects/Form';
 
 /**
  * LeagueService handles league standings calculations.
@@ -35,18 +36,18 @@ export class LeagueService {
     const awayGoals = result.getAwayGoals();
 
     // Determine form results
-    let homeFormResult: 'W' | 'D' | 'L';
-    let awayFormResult: 'W' | 'D' | 'L';
+    let homeFormResult: FormResult;
+    let awayFormResult: FormResult;
 
     if (result.isHomeWin()) {
-      homeFormResult = 'W';
-      awayFormResult = 'L';
+      homeFormResult = FormResult.WIN;
+      awayFormResult = FormResult.LOSS;
     } else if (result.isDraw()) {
-      homeFormResult = 'D';
-      awayFormResult = 'D';
+      homeFormResult = FormResult.DRAW;
+      awayFormResult = FormResult.DRAW;
     } else {
-      homeFormResult = 'L';
-      awayFormResult = 'W';
+      homeFormResult = FormResult.LOSS;
+      awayFormResult = FormResult.WIN;
     }
 
     // Update standings

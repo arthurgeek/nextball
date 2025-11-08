@@ -3,7 +3,7 @@ import { MatchSimulationService } from '@/application/services/MatchSimulationSe
 import { Match } from '@/domain/entities/Match';
 import { Team } from '@/domain/entities/Team';
 import { Strength } from '@/domain/value-objects/Strength';
-import { Form } from '@/domain/value-objects/Form';
+import { Form, FormResult } from '@/domain/value-objects/Form';
 
 describe('MatchSimulationService', () => {
   let service: MatchSimulationService;
@@ -180,12 +180,17 @@ describe('MatchSimulationService', () => {
       // Allow for statistical variance, but they should be within 10% of each other
       const homeWinPercent = (homeWins / simulations) * 100;
       const awayWinPercent = (awayWins / simulations) * 100;
+      const drawPercent = (draws / simulations) * 100;
 
       // Both should be in the 25-40% range (with draws taking ~20-30%)
       expect(homeWinPercent).toBeGreaterThan(20);
       expect(homeWinPercent).toBeLessThan(45);
       expect(awayWinPercent).toBeGreaterThan(20);
       expect(awayWinPercent).toBeLessThan(45);
+
+      // Draw percentage should be realistic
+      expect(drawPercent).toBeGreaterThan(15);
+      expect(drawPercent).toBeLessThan(40);
 
       // Difference should be small (within 10 percentage points)
       const difference = Math.abs(homeWinPercent - awayWinPercent);
@@ -348,7 +353,7 @@ describe('MatchSimulationService', () => {
       let winsWithGoodForm = 0;
       let winsWithNeutralForm = 0;
 
-      const goodForm = Form.create({ results: ['W', 'W', 'W', 'D', 'D'] }); // 0.6
+      const goodForm = Form.create({ results: [FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.DRAW, FormResult.DRAW] }); // 0.6
 
       for (let i = 0; i < simulations; i++) {
         // Home team with good form vs away team
@@ -369,7 +374,7 @@ describe('MatchSimulationService', () => {
       let winsWithPoorForm = 0;
       let winsWithNeutralForm = 0;
 
-      const poorForm = Form.create({ results: ['L', 'L', 'L', 'L', 'D'] }); // -0.8
+      const poorForm = Form.create({ results: [FormResult.LOSS, FormResult.LOSS, FormResult.LOSS, FormResult.LOSS, FormResult.DRAW] }); // -0.8
 
       for (let i = 0; i < simulations; i++) {
         // Home team with poor form vs away team
@@ -391,8 +396,8 @@ describe('MatchSimulationService', () => {
       let awayWins = 0;
       let draws = 0;
 
-      const homeGoodForm = Form.create({ results: ['W', 'W', 'W', 'W', 'W'] }); // 1.0
-      const awayGoodForm = Form.create({ results: ['W', 'W', 'W', 'W', 'W'] }); // 1.0
+      const homeGoodForm = Form.create({ results: [FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN] }); // 1.0
+      const awayGoodForm = Form.create({ results: [FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN] }); // 1.0
 
       for (let i = 0; i < simulations; i++) {
         const result = service.simulate(match, homeGoodForm, awayGoodForm);

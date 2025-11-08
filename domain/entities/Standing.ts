@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Team } from './Team';
-import { Form } from '../value-objects/Form';
+import { Form, FormResult } from '../value-objects/Form';
 
 const CreateStandingSchema = z.object({
   team: z.any(), // Team instance
@@ -106,11 +106,11 @@ export class Standing {
   recordResult(
     goalsFor: number,
     goalsAgainst: number,
-    formResult: 'W' | 'D' | 'L'
+    formResult: FormResult
   ): Standing {
-    const won = formResult === 'W' ? this.won + 1 : this.won;
-    const drawn = formResult === 'D' ? this.drawn + 1 : this.drawn;
-    const lost = formResult === 'L' ? this.lost + 1 : this.lost;
+    const won = formResult === FormResult.WIN ? this.won + 1 : this.won;
+    const drawn = formResult === FormResult.DRAW ? this.drawn + 1 : this.drawn;
+    const lost = formResult === FormResult.LOSS ? this.lost + 1 : this.lost;
 
     return new Standing(
       this.team,
