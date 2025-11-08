@@ -103,7 +103,7 @@ test.describe('League Simulation', () => {
     await expect(page.getByText(/Complete a season to start recording champions/i)).toBeVisible();
 
     // Close dialog
-    const closeButton = page.getByRole('button', { name: 'Close' });
+    const closeButton = page.getByRole('button', { name: 'Close', exact: true });
     await closeButton.click();
 
     // Dialog should close
