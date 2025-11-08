@@ -7,11 +7,7 @@ import { Match } from '@/domain/entities/Match';
 import { MatchResult } from '@/domain/value-objects/MatchResult';
 import { Strength } from '@/domain/value-objects/Strength';
 import { Form, FormResult } from '@/domain/value-objects/Form';
-import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
-import { PointsHeadToHeadSorter } from '@/application/strategies/standings/PointsHeadToHeadSorter';
-import { PointsWinsSorter } from '@/application/strategies/standings/PointsWinsSorter';
-import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
-import { SingleRoundRobinGenerator } from '@/application/strategies/fixtures/SingleRoundRobinGenerator';
+import { StrategyRegistry } from '@/application/StrategyRegistry';
 
 /**
  * Championship record for a single season
@@ -138,23 +134,8 @@ export class LeaguePersistenceService {
 
     const teamMap = new Map(teams.map((team) => [team.getId(), team]));
 
-    // Deserialize sorting strategy
-    let sorter;
-    switch (data.league.sortingStrategy) {
-      case 'points-goal-difference':
-        sorter = new PointsGoalDifferenceSorter();
-        break;
-      case 'points-head-to-head':
-        sorter = new PointsHeadToHeadSorter();
-        break;
-      case 'points-wins':
-        sorter = new PointsWinsSorter();
-        break;
-      default:
-        throw new Error(
-          `Unknown sorting strategy: ${data.league.sortingStrategy}`
-        );
-    }
+    // Deserialize sorting strategy from registry
+    const sorter = StrategyRegistry.createSorter(data.league.sortingStrategy);
 
     // Reconstruct league
     const league = League.create({
@@ -210,20 +191,8 @@ export class LeaguePersistenceService {
       });
     });
 
-    // Deserialize fixture generation strategy
-    let generator;
-    switch (data.fixtureGenerationStrategy) {
-      case 'double-round-robin':
-        generator = new DoubleRoundRobinGenerator();
-        break;
-      case 'single-round-robin':
-        generator = new SingleRoundRobinGenerator();
-        break;
-      default:
-        throw new Error(
-          `Unknown fixture generation strategy: ${data.fixtureGenerationStrategy}`
-        );
-    }
+    // Deserialize fixture generation strategy from registry
+    const generator = StrategyRegistry.createGenerator(data.fixtureGenerationStrategy);
 
     return Season.create({
       id: data.id,

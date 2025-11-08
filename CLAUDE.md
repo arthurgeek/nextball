@@ -266,3 +266,89 @@ pnpm test:e2e:ui    # playwright test --ui
   }
 }
 ```
+
+## Custom Strategy Registration
+
+The framework uses a global `StrategyRegistry` to allow users to bring their own strategies without modifying our code.
+
+### Registering Custom Sorters
+
+```typescript
+import { StrategyRegistry } from '@/application/StrategyRegistry';
+import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
+import type { Standing } from '@/domain/entities/Standing';
+
+// 1. Create your custom sorter
+class MyCustomSorter implements StandingSorter {
+  getName(): string {
+    return 'my-custom-sorter';
+  }
+
+  sort(standings: Standing[]): Standing[] {
+    // Your custom sorting logic here
+    return standings;
+  }
+}
+
+// 2. Register it globally (do this once at app startup)
+StrategyRegistry.registerSorter('my-custom-sorter', MyCustomSorter);
+
+// 3. Use it when creating a league
+const league = League.create({
+  id: uuidv4(),
+  name: 'My League',
+  teams,
+  sorter: new MyCustomSorter(),
+});
+```
+
+### Registering Custom Fixture Generators
+
+```typescript
+import { StrategyRegistry } from '@/application/StrategyRegistry';
+import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
+import type { Team } from '@/domain/entities/Team';
+import type { Round } from '@/domain/value-objects/Round';
+
+// 1. Create your custom generator
+class MyCustomGenerator implements FixtureGenerator {
+  getName(): string {
+    return 'my-custom-generator';
+  }
+
+  getTotalRounds(teamCount: number): number {
+    // Return total rounds for your format
+    return teamCount - 1;
+  }
+
+  generateFixtures(teams: Team[]): Round[] {
+    // Your custom fixture generation logic here
+    return [];
+  }
+}
+
+// 2. Register it globally (do this once at app startup)
+StrategyRegistry.registerGenerator('my-custom-generator', MyCustomGenerator);
+
+// 3. Use it when creating a season
+const season = coordinator.createSeason(league, year, new MyCustomGenerator());
+```
+
+### Built-in Strategies
+
+**Standing Sorters:**
+- `points-goal-difference` - Sort by points, then goal difference, then goals for
+- `points-head-to-head` - Sort by points, then head-to-head results, then goal difference
+- `points-wins` - Sort by PPG, then wins, then goal difference
+
+**Fixture Generators:**
+- `double-round-robin` - Home & away matches (default league format)
+- `single-round-robin` - One match per pairing (neutral venue)
+
+### Serialization
+
+The registry automatically handles serialization/deserialization:
+- When saving: Calls `strategy.getName()` to get the string representation
+- When loading: Uses the registry to instantiate the correct class from the name
+
+This means **custom strategies work seamlessly with persistence** as long as they're registered before deserialization occurs.
