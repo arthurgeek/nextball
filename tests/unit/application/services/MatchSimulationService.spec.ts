@@ -147,6 +147,77 @@ describe('MatchSimulationService', () => {
     });
   });
 
+  describe('neutral venue', () => {
+    it('should NOT apply home advantage at neutral venues', () => {
+      // Equal strength teams at neutral venue should have roughly equal win rates
+      const neutralMatch = Match.create({
+        id: 'neutral-1',
+        homeTeam,
+        awayTeam,
+        isNeutralVenue: true,
+      });
+
+      const simulations = 1000;
+      let homeWins = 0;
+      let awayWins = 0;
+      let draws = 0;
+
+      for (let i = 0; i < simulations; i++) {
+        const result = service.simulate(neutralMatch);
+        const matchResult = result.getResult();
+
+        if (matchResult?.isHomeWin()) {
+          homeWins++;
+        } else if (matchResult?.isAwayWin()) {
+          awayWins++;
+        } else {
+          draws++;
+        }
+      }
+
+      // At neutral venue with equal teams, win rates should be roughly equal
+      // Allow for statistical variance, but they should be within 10% of each other
+      const homeWinPercent = (homeWins / simulations) * 100;
+      const awayWinPercent = (awayWins / simulations) * 100;
+
+      // Both should be in the 25-40% range (with draws taking ~20-30%)
+      expect(homeWinPercent).toBeGreaterThan(20);
+      expect(homeWinPercent).toBeLessThan(45);
+      expect(awayWinPercent).toBeGreaterThan(20);
+      expect(awayWinPercent).toBeLessThan(45);
+
+      // Difference should be small (within 10 percentage points)
+      const difference = Math.abs(homeWinPercent - awayWinPercent);
+      expect(difference).toBeLessThan(10);
+    });
+
+    it('should generate similar average goals for both teams at neutral venues', () => {
+      const neutralMatch = Match.create({
+        id: 'neutral-2',
+        homeTeam,
+        awayTeam,
+        isNeutralVenue: true,
+      });
+
+      const simulations = 1000;
+      let totalHomeGoals = 0;
+      let totalAwayGoals = 0;
+
+      for (let i = 0; i < simulations; i++) {
+        const result = service.simulate(neutralMatch);
+        totalHomeGoals += result.getResult()?.getHomeGoals() ?? 0;
+        totalAwayGoals += result.getResult()?.getAwayGoals() ?? 0;
+      }
+
+      const avgHomeGoals = totalHomeGoals / simulations;
+      const avgAwayGoals = totalAwayGoals / simulations;
+
+      // At neutral venue, goal averages should be very close (within 0.15 goals)
+      const goalDifference = Math.abs(avgHomeGoals - avgAwayGoals);
+      expect(goalDifference).toBeLessThan(0.15);
+    });
+  });
+
   describe('team strength impact', () => {
     it('should give stronger team more wins (balanced home/away)', () => {
       const strongTeam = Team.create({

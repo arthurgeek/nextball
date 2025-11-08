@@ -24,10 +24,11 @@ export class MatchSimulationService {
   simulate(match: Match): Match {
     const homeTeam = match.getHomeTeam();
     const awayTeam = match.getAwayTeam();
+    const isNeutral = match.isNeutralVenue();
 
     // Calculate expected goals (xG) using logistic regression
-    // Home advantage is integrated directly into the calculation
-    let homeXG = calculateBaseXG(homeTeam.getStrength().getValue(), true);
+    // Home advantage is applied only for non-neutral venues
+    let homeXG = calculateBaseXG(homeTeam.getStrength().getValue(), !isNeutral);
     let awayXG = calculateBaseXG(awayTeam.getStrength().getValue(), false);
 
     // Apply performance modifiers to add variance
