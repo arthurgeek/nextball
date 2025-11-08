@@ -11,6 +11,7 @@ interface CreateMatchProps {
   homeTeam: Team;
   awayTeam: Team;
   result?: MatchResult;
+  isNeutralVenue?: boolean;
 }
 
 export class Match {
@@ -18,16 +19,23 @@ export class Match {
     private readonly id: string,
     private readonly homeTeam: Team,
     private readonly awayTeam: Team,
-    private readonly result?: MatchResult
+    private readonly result: MatchResult | undefined,
+    private readonly neutralVenue: boolean
   ) {}
 
   static create(props: CreateMatchProps): Match {
     CreateMatchSchema.parse(props);
-    return new Match(props.id, props.homeTeam, props.awayTeam, props.result);
+    return new Match(
+      props.id,
+      props.homeTeam,
+      props.awayTeam,
+      props.result,
+      props.isNeutralVenue ?? false
+    );
   }
 
   withResult(result: MatchResult): Match {
-    return new Match(this.id, this.homeTeam, this.awayTeam, result);
+    return new Match(this.id, this.homeTeam, this.awayTeam, result, this.neutralVenue);
   }
 
   getId(): string {
@@ -48,6 +56,10 @@ export class Match {
 
   hasResult(): boolean {
     return this.result !== undefined;
+  }
+
+  isNeutralVenue(): boolean {
+    return this.neutralVenue;
   }
 
   getScore(): string {
