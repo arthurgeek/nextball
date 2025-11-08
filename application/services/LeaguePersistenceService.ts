@@ -7,8 +7,11 @@ import { Match } from '@/domain/entities/Match';
 import { MatchResult } from '@/domain/value-objects/MatchResult';
 import { Strength } from '@/domain/value-objects/Strength';
 import { Form, FormResult } from '@/domain/value-objects/Form';
-import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
-import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
+import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
+import { PointsHeadToHeadSorter } from '@/application/strategies/standings/PointsHeadToHeadSorter';
+import { PointsWinsSorter } from '@/application/strategies/standings/PointsWinsSorter';
+import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
+import { SingleRoundRobinGenerator } from '@/application/strategies/fixtures/SingleRoundRobinGenerator';
 
 /**
  * Championship record for a single season
@@ -68,10 +71,6 @@ export interface SerializedSeason {
  * LeaguePersistenceService handles serialization and persistence of league data.
  */
 export class LeaguePersistenceService {
-  constructor(
-    private readonly standingSorters: Map<string, StandingSorter>,
-    private readonly fixtureGenerators: Map<string, FixtureGenerator>
-  ) {}
   /**
    * Serialize a season to JSON-compatible format
    */
@@ -139,12 +138,22 @@ export class LeaguePersistenceService {
 
     const teamMap = new Map(teams.map((team) => [team.getId(), team]));
 
-    // Map sorting strategy string to class instance
-    const sorter = this.standingSorters.get(data.league.sortingStrategy);
-    if (!sorter) {
-      throw new Error(
-        `Unknown sorting strategy: ${data.league.sortingStrategy}`
-      );
+    // Deserialize sorting strategy
+    let sorter;
+    switch (data.league.sortingStrategy) {
+      case 'points-goal-difference':
+        sorter = new PointsGoalDifferenceSorter();
+        break;
+      case 'points-head-to-head':
+        sorter = new PointsHeadToHeadSorter();
+        break;
+      case 'points-wins':
+        sorter = new PointsWinsSorter();
+        break;
+      default:
+        throw new Error(
+          `Unknown sorting strategy: ${data.league.sortingStrategy}`
+        );
     }
 
     // Reconstruct league
@@ -201,14 +210,19 @@ export class LeaguePersistenceService {
       });
     });
 
-    // Map fixture generation strategy string to class instance
-    const generator = this.fixtureGenerators.get(
-      data.fixtureGenerationStrategy
-    );
-    if (!generator) {
-      throw new Error(
-        `Unknown fixture generation strategy: ${data.fixtureGenerationStrategy}`
-      );
+    // Deserialize fixture generation strategy
+    let generator;
+    switch (data.fixtureGenerationStrategy) {
+      case 'double-round-robin':
+        generator = new DoubleRoundRobinGenerator();
+        break;
+      case 'single-round-robin':
+        generator = new SingleRoundRobinGenerator();
+        break;
+      default:
+        throw new Error(
+          `Unknown fixture generation strategy: ${data.fixtureGenerationStrategy}`
+        );
     }
 
     return Season.create({

@@ -4,13 +4,6 @@ import { SeasonSimulationService } from '@/application/services/SeasonSimulation
 import { LeaguePersistenceService } from '@/application/services/LeaguePersistenceService';
 import { SeasonOrchestrator } from '@/application/services/SeasonOrchestrator';
 import { LeagueCoordinator } from '@/application/coordinators/LeagueCoordinator';
-import { type StandingSorter } from '@/application/strategies/standings/StandingSorter';
-import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
-import { PointsHeadToHeadSorter } from '@/application/strategies/standings/PointsHeadToHeadSorter';
-import { PointsWinsSorter } from '@/application/strategies/standings/PointsWinsSorter';
-import { type FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
-import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
-import { SingleRoundRobinGenerator } from '@/application/strategies/fixtures/SingleRoundRobinGenerator';
 
 /**
  * Simple manual dependency injection container
@@ -23,30 +16,6 @@ let seasonSimulationService: SeasonSimulationService | null = null;
 let leaguePersistenceService: LeaguePersistenceService | null = null;
 let seasonOrchestrator: SeasonOrchestrator | null = null;
 let leagueCoordinator: LeagueCoordinator | null = null;
-
-// Strategy instances - used only for deserialization in persistence layer
-// Users can register custom strategies here
-let standingSorters: Map<string, StandingSorter> | null = null;
-let fixtureGenerators: Map<string, FixtureGenerator> | null = null;
-
-export function getStandingSorters(): Map<string, StandingSorter> {
-  if (!standingSorters) {
-    standingSorters = new Map();
-    standingSorters.set('points-goal-difference', new PointsGoalDifferenceSorter());
-    standingSorters.set('points-head-to-head', new PointsHeadToHeadSorter());
-    standingSorters.set('points-wins', new PointsWinsSorter());
-  }
-  return standingSorters;
-}
-
-export function getFixtureGenerators(): Map<string, FixtureGenerator> {
-  if (!fixtureGenerators) {
-    fixtureGenerators = new Map();
-    fixtureGenerators.set('double-round-robin', new DoubleRoundRobinGenerator());
-    fixtureGenerators.set('single-round-robin', new SingleRoundRobinGenerator());
-  }
-  return fixtureGenerators;
-}
 
 export function getMatchSimulationService(): MatchSimulationService {
   if (!matchSimulationService) {
@@ -71,10 +40,7 @@ export function getSeasonSimulationService(): SeasonSimulationService {
 
 export function getLeaguePersistenceService(): LeaguePersistenceService {
   if (!leaguePersistenceService) {
-    leaguePersistenceService = new LeaguePersistenceService(
-      getStandingSorters(),
-      getFixtureGenerators()
-    );
+    leaguePersistenceService = new LeaguePersistenceService();
   }
   return leaguePersistenceService;
 }

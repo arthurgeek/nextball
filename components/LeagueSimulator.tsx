@@ -126,9 +126,8 @@ export function LeagueSimulator() {
     try {
       const updated = await simulateNextRound(season);
       setSeason(updated);
-      // Set viewing round to the next unplayed round (currentRound + 1)
-      // so the simulate button stays visible for the next round
-      setViewingRound(updated.currentRound + 1);
+      // Show the results of the round that was just simulated
+      setViewingRound(updated.currentRound);
 
       // Reload championship stats if season completed
       if (updated.championId) {
