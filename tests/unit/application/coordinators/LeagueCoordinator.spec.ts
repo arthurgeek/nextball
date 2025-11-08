@@ -365,7 +365,6 @@ describe('LeagueCoordinator - Utility Methods', () => {
       season = coordinator.simulateNextRound(season);
 
       // Manually set current round back to 1 (which is now complete)
-      const firstRound = season.getRound(1)!;
       const seasonWithResetRound = season.withRounds(season.getRounds()).withCurrentRound(0);
 
       // Try to simulate the already-completed round
