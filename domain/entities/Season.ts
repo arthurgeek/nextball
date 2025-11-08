@@ -3,6 +3,7 @@ import { League } from './League';
 import { Standing } from './Standing';
 import { Round } from '../value-objects/Round';
 import type { FixtureGenerator } from '@/application/strategies/fixtures/FixtureGenerator';
+import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
 
 const CreateSeasonSchema = z.object({
   id: z.string().min(1),
@@ -15,6 +16,7 @@ interface CreateSeasonProps {
   year: number;
   league: League;
   generator: FixtureGenerator;
+  sorter: StandingSorter;
   rounds?: Round[];
   standings?: Standing[];
   currentRound?: number;
@@ -32,6 +34,7 @@ export class Season {
     private readonly year: number,
     private readonly league: League,
     private readonly generator: FixtureGenerator,
+    private readonly sorter: StandingSorter,
     private readonly rounds: Round[],
     private readonly standings: Standing[],
     private readonly currentRound: number,
@@ -50,6 +53,7 @@ export class Season {
       props.year,
       props.league,
       props.generator,
+      props.sorter,
       props.rounds ?? [],
       props.standings ?? [],
       props.currentRound ?? 0,
@@ -93,6 +97,10 @@ export class Season {
     return this.generator;
   }
 
+  getSorter(): StandingSorter {
+    return this.sorter;
+  }
+
   getTotalRounds(): number {
     return this.league.getTotalRounds();
   }
@@ -112,6 +120,7 @@ export class Season {
       this.year,
       this.league,
       this.generator,
+      this.sorter,
       rounds,
       this.standings,
       this.currentRound,
@@ -125,6 +134,7 @@ export class Season {
       this.year,
       this.league,
       this.generator,
+      this.sorter,
       this.rounds,
       standings,
       this.currentRound,
@@ -138,6 +148,7 @@ export class Season {
       this.year,
       this.league,
       this.generator,
+      this.sorter,
       this.rounds,
       this.standings,
       currentRound,
@@ -151,6 +162,7 @@ export class Season {
       this.year,
       this.league,
       this.generator,
+      this.sorter,
       this.rounds,
       this.standings,
       this.currentRound,
@@ -170,6 +182,7 @@ export class Season {
       this.year,
       this.league,
       this.generator,
+      this.sorter,
       updatedRounds,
       this.standings,
       this.currentRound,
@@ -186,6 +199,7 @@ export class Season {
       this.year,
       this.league,
       generator,
+      this.sorter,
       this.rounds,
       this.standings,
       this.currentRound,

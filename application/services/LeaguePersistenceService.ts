@@ -27,7 +27,6 @@ export interface SerializedSeason {
   league: {
     id: string;
     name: string;
-    sortingStrategy: string;
     teams: {
       id: string;
       name: string;
@@ -60,6 +59,7 @@ export interface SerializedSeason {
   }[];
   currentRound: number;
   fixtureGenerationStrategy: string;
+  sortingStrategy: string;
   championId?: string;
 }
 
@@ -80,7 +80,6 @@ export class LeaguePersistenceService {
       league: {
         id: league.getId(),
         name: league.getName(),
-        sortingStrategy: league.getSorter().getName(),
         teams: teams.map((team) => ({
           id: team.getId(),
           name: team.getName(),
@@ -115,6 +114,7 @@ export class LeaguePersistenceService {
       })),
       currentRound: season.getCurrentRound(),
       fixtureGenerationStrategy: season.getGenerator().getName(),
+      sortingStrategy: season.getSorter().getName(),
       championId: season.getChampionId(),
     };
   }
@@ -134,15 +134,11 @@ export class LeaguePersistenceService {
 
     const teamMap = new Map(teams.map((team) => [team.getId(), team]));
 
-    // Deserialize sorting strategy from registry
-    const sorter = StrategyRegistry.createSorter(data.league.sortingStrategy);
-
     // Reconstruct league
     const league = League.create({
       id: data.league.id,
       name: data.league.name,
       teams,
-      sorter,
     });
 
     // Reconstruct rounds with matches
@@ -194,11 +190,15 @@ export class LeaguePersistenceService {
     // Deserialize fixture generation strategy from registry
     const generator = StrategyRegistry.createGenerator(data.fixtureGenerationStrategy);
 
+    // Deserialize sorting strategy from registry
+    const sorter = StrategyRegistry.createSorter(data.sortingStrategy);
+
     return Season.create({
       id: data.id,
       year: data.year,
       league,
       generator,
+      sorter,
       rounds,
       standings,
       currentRound: data.currentRound,

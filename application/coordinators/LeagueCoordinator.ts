@@ -4,6 +4,7 @@ import { MatchSimulationService } from '../services/MatchSimulationService';
 import { LeagueService } from '../services/LeagueService';
 import { SeasonSimulationService } from '../services/SeasonSimulationService';
 import type { FixtureGenerator } from '../strategies/fixtures/FixtureGenerator';
+import type { StandingSorter } from '../strategies/standings/StandingSorter';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -19,12 +20,13 @@ export class LeagueCoordinator {
 
   /**
    * Create a new season for a league.
-   * Pass a FixtureGenerator instance directly.
+   * Pass a FixtureGenerator and StandingSorter instance directly.
    */
   createSeason(
     league: League,
     year: number,
-    generator: FixtureGenerator
+    generator: FixtureGenerator,
+    sorter: StandingSorter
   ): Season {
     // Generate all fixtures for the season using the provided generator
     const rounds = this.seasonSimulationService.generateFixtures(
@@ -42,6 +44,7 @@ export class LeagueCoordinator {
       year,
       league,
       generator,
+      sorter,
       rounds,
       standings,
       currentRound: 0,
@@ -81,8 +84,8 @@ export class LeagueCoordinator {
       );
     }
 
-    // Sort standings using the league's sorting strategy
-    const sorter = season.getLeague().getSorter();
+    // Sort standings using the season's sorting strategy
+    const sorter = season.getSorter();
     updatedStandings = this.leagueService.sortStandings(
       updatedStandings,
       sorter

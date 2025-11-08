@@ -33,7 +33,6 @@ describe('LeagueCoordinator - Season Creation', () => {
       id: 'league-1',
       name: 'Test League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
   });
 
@@ -41,7 +40,7 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season = coordinator.createSeason(league, year, generator);
+    const season = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getYear()).toBe(2025);
   });
@@ -50,7 +49,7 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season = coordinator.createSeason(league, year, generator);
+    const season = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getLeague().getId()).toBe('league-1');
     expect(season.getLeague().getName()).toBe('Test League');
@@ -60,7 +59,7 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season = coordinator.createSeason(league, year, generator);
+    const season = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     // 4 teams = 6 rounds (each team plays each other twice)
     // Formula: (n-1) * 2 where n = number of teams
@@ -72,7 +71,7 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season = coordinator.createSeason(league, year, generator);
+    const season = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getCurrentRound()).toBe(0);
   });
@@ -81,7 +80,7 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season = coordinator.createSeason(league, year, generator);
+    const season = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getChampionId()).toBeUndefined();
   });
@@ -90,8 +89,8 @@ describe('LeagueCoordinator - Season Creation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const year = 2025;
 
-    const season1 = coordinator.createSeason(league, year, generator);
-    const season2 = coordinator.createSeason(league, year, generator);
+    const season1 = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
+    const season2 = coordinator.createSeason(league, year, generator, new PointsGoalDifferenceSorter());
 
     expect(season1.getId()).not.toBe(season2.getId());
   });
@@ -99,9 +98,9 @@ describe('LeagueCoordinator - Season Creation', () => {
   it('should support incrementing year for new seasons', () => {
     const generator = new DoubleRoundRobinGenerator();
 
-    const season2025 = coordinator.createSeason(league, 2025, generator);
-    const season2026 = coordinator.createSeason(league, 2026, generator);
-    const season2027 = coordinator.createSeason(league, 2027, generator);
+    const season2025 = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+    const season2026 = coordinator.createSeason(league, 2026, generator, new PointsGoalDifferenceSorter());
+    const season2027 = coordinator.createSeason(league, 2027, generator, new PointsGoalDifferenceSorter());
 
     expect(season2025.getYear()).toBe(2025);
     expect(season2026.getYear()).toBe(2026);
@@ -130,13 +129,12 @@ describe('LeagueCoordinator - Season Simulation', () => {
       id: 'league-1',
       name: 'Test League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
   });
 
   it('should simulate next round and increment currentRound', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getCurrentRound()).toBe(0);
 
@@ -147,7 +145,7 @@ describe('LeagueCoordinator - Season Simulation', () => {
 
   it('should simulate multiple rounds sequentially', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     // With 2 teams, we only have 2 rounds total
     season = coordinator.simulateNextRound(season);
@@ -159,7 +157,7 @@ describe('LeagueCoordinator - Season Simulation', () => {
 
   it('should update standings after simulating round', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     const updatedSeason = coordinator.simulateNextRound(season);
 
@@ -169,7 +167,7 @@ describe('LeagueCoordinator - Season Simulation', () => {
 
   it('should assign match results after simulation', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     const updatedSeason = coordinator.simulateNextRound(season);
     const round1 = updatedSeason.getRounds()[0];
@@ -203,13 +201,12 @@ describe('LeagueCoordinator - Season Completion', () => {
       id: 'league-1',
       name: 'Test League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
   });
 
   it('should mark season complete and assign champion after all rounds', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     const totalRounds = season.getRounds().length;
 
@@ -224,7 +221,7 @@ describe('LeagueCoordinator - Season Completion', () => {
 
   it('should have no champion before season completes', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     // Simulate only first round
     season = coordinator.simulateNextRound(season);
@@ -234,7 +231,7 @@ describe('LeagueCoordinator - Season Completion', () => {
 
   it('should simulate all remaining rounds at once with simulateRemaining()', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     expect(season.getCurrentRound()).toBe(0);
 
@@ -247,7 +244,7 @@ describe('LeagueCoordinator - Season Completion', () => {
 
   it('should handle simulateRemaining() on partially simulated season', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     // Simulate first round manually
     season = coordinator.simulateNextRound(season);
@@ -284,13 +281,12 @@ describe('LeagueCoordinator - Utility Methods', () => {
       id: 'league-1',
       name: 'Test League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
   });
 
   it('should get next fixtures before any simulation', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     const nextFixtures = coordinator.getNextFixtures(season);
 
@@ -301,7 +297,7 @@ describe('LeagueCoordinator - Utility Methods', () => {
 
   it('should get next fixtures after simulating some rounds', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     season = coordinator.simulateNextRound(season);
 
@@ -313,7 +309,7 @@ describe('LeagueCoordinator - Utility Methods', () => {
 
   it('should return empty array when no more fixtures available', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     season = coordinator.simulateRemaining(season);
 
@@ -324,14 +320,14 @@ describe('LeagueCoordinator - Utility Methods', () => {
 
   it('should return true for canAdvance() when rounds remain', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     expect(coordinator.canAdvance(season)).toBe(true);
   });
 
   it('should return true for canAdvance() after simulating some rounds', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     season = coordinator.simulateNextRound(season);
 
@@ -340,7 +336,7 @@ describe('LeagueCoordinator - Utility Methods', () => {
 
   it('should return false for canAdvance() when all rounds complete', () => {
     const generator = new DoubleRoundRobinGenerator();
-    let season = coordinator.createSeason(league, 2025, generator);
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
 
     season = coordinator.simulateRemaining(season);
 

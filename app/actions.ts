@@ -160,10 +160,9 @@ export async function createNewSeason(
     id: uuidv4(),
     name: 'Premier League',
     teams,
-    sorter,
   });
 
-  const season = coordinator.createSeason(league, year, generator);
+  const season = coordinator.createSeason(league, year, generator, sorter);
 
   return persistenceService.serializeSeason(season);
 }

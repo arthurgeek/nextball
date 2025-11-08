@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { Team } from './Team';
-import type { StandingSorter } from '@/application/strategies/standings/StandingSorter';
 
 const CreateLeagueSchema = z.object({
   id: z.string().min(1),
@@ -12,20 +11,17 @@ interface CreateLeagueProps {
   id: string;
   name: string;
   teams: Team[];
-  sorter: StandingSorter;
 }
 
 /**
  * League entity representing a football league with teams.
  * Immutable - use withXxx() methods to create updated instances.
- * Holds a StandingSorter instance directly (not a string).
  */
 export class League {
   private constructor(
     private readonly id: string,
     private readonly name: string,
-    private readonly teams: Team[],
-    private readonly sorter: StandingSorter
+    private readonly teams: Team[]
   ) {}
 
   static create(props: CreateLeagueProps): League {
@@ -33,8 +29,7 @@ export class League {
     return new League(
       props.id,
       props.name,
-      props.teams,
-      props.sorter
+      props.teams
     );
   }
 
@@ -58,10 +53,6 @@ export class League {
     return this.teams.find((team) => team.getId() === id);
   }
 
-  getSorter(): StandingSorter {
-    return this.sorter;
-  }
-
   /**
    * Calculate total rounds needed for a round-robin tournament.
    * Each team plays every other team twice (home and away).
@@ -74,20 +65,13 @@ export class League {
    * Add a team to the league
    */
   withTeam(team: Team): League {
-    return new League(this.id, this.name, [...this.teams, team], this.sorter);
+    return new League(this.id, this.name, [...this.teams, team]);
   }
 
   /**
    * Replace all teams
    */
   withTeams(teams: Team[]): League {
-    return new League(this.id, this.name, teams, this.sorter);
-  }
-
-  /**
-   * Change the sorting strategy
-   */
-  withSorter(sorter: StandingSorter): League {
-    return new League(this.id, this.name, this.teams, sorter);
+    return new League(this.id, this.name, teams);
   }
 }

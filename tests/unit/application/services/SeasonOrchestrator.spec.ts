@@ -47,13 +47,12 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
       id: 'league-1',
       name: 'Test League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
   });
 
   it('should simulate next round and return serialized season', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     const serialized = persistence.serializeSeason(season);
 
     const result = orchestrator.simulateNextRound(serialized);
@@ -64,7 +63,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
 
   it('should handle serialization/deserialization correctly', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     const serialized = persistence.serializeSeason(season);
 
     const result = orchestrator.simulateNextRound(serialized);
@@ -81,7 +80,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
     const saveSpy = vi.spyOn(persistence, 'saveChampionship');
 
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     let serialized = persistence.serializeSeason(season);
 
     const totalRounds = season.getRounds().length;
@@ -104,7 +103,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
 
   it('should not save championship for incomplete season', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     const serialized = persistence.serializeSeason(season);
 
     const saveSpy = vi.spyOn(persistence, 'saveChampionship');
@@ -117,7 +116,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
 
   it('should increment current round after simulation', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     let serialized = persistence.serializeSeason(season);
 
     expect(serialized.currentRound).toBe(0);
@@ -131,7 +130,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
 
   it('should update standings after simulating round', () => {
     const generator = new DoubleRoundRobinGenerator();
-    const season = coordinator.createSeason(league, 2025, generator);
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
     const serialized = persistence.serializeSeason(season);
 
     const result = orchestrator.simulateNextRound(serialized);

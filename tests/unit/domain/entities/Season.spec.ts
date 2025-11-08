@@ -7,6 +7,7 @@ import { Match } from '@/domain/entities/Match';
 import { Standing } from '@/domain/entities/Standing';
 import { Strength } from '@/domain/value-objects/Strength';
 import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
+import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
 
 describe('Season - Creation', () => {
   it('should create season with valid properties', () => {
@@ -18,8 +19,10 @@ describe('Season - Creation', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
 
     const rounds = [
       Round.create({
@@ -43,6 +46,8 @@ describe('Season - Creation', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 0,
@@ -51,6 +56,8 @@ describe('Season - Creation', () => {
     expect(season.getId()).toBe('season-1');
     expect(season.getLeague()).toBe(league);
     expect(season.getYear()).toBe(2025);
+    expect(season.getSorter()).toBe(sorter);
+    expect(season.getGenerator()).toBe(generator);
     expect(season.getRounds()).toEqual(rounds);
     expect(season.getStandings()).toEqual(standings);
     expect(season.getCurrentRound()).toBe(0);
@@ -65,8 +72,9 @@ describe('Season - Creation', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -74,6 +82,8 @@ describe('Season - Creation', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
     });
@@ -90,8 +100,9 @@ describe('Season - Creation', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -99,6 +110,8 @@ describe('Season - Creation', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
     });
@@ -117,8 +130,9 @@ describe('Season - Immutability', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -126,6 +140,8 @@ describe('Season - Immutability', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 0,
@@ -147,8 +163,9 @@ describe('Season - Immutability', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -156,6 +173,8 @@ describe('Season - Immutability', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
     });
@@ -188,8 +207,9 @@ describe('Season - Immutability', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -197,6 +217,8 @@ describe('Season - Immutability', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
     });
@@ -221,8 +243,9 @@ describe('Season - Immutability', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -230,6 +253,8 @@ describe('Season - Immutability', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
     });
@@ -252,9 +277,10 @@ describe('Season - Season Completion', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
 
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds = [
       Round.create({
         roundNumber: 1,
@@ -273,6 +299,8 @@ describe('Season - Season Completion', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 0,
@@ -290,9 +318,10 @@ describe('Season - Season Completion', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
 
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds = [
       Round.create({
         roundNumber: 1,
@@ -311,6 +340,8 @@ describe('Season - Season Completion', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 2, // With 2 teams: (2-1)*2 = 2 rounds total
@@ -329,8 +360,9 @@ describe('Season - Season Completion', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -338,6 +370,8 @@ describe('Season - Season Completion', () => {
       id: 'season-1',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 2, // With 2 teams: (2-1)*2 = 2 rounds total
@@ -359,8 +393,9 @@ describe('Season - Getters', () => {
       id: 'league-1',
       name: 'Premier League',
       teams,
-      sorter: new PointsGoalDifferenceSorter(),
     });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
     const rounds: Round[] = [];
     const standings = [Standing.create({ team: teams[0] })];
 
@@ -368,6 +403,8 @@ describe('Season - Getters', () => {
       id: 'season-123',
       league,
       year: 2025,
+      generator,
+      sorter,
       rounds,
       standings,
       currentRound: 5,
@@ -377,6 +414,8 @@ describe('Season - Getters', () => {
     expect(season.getId()).toBe('season-123');
     expect(season.getLeague()).toBe(league);
     expect(season.getYear()).toBe(2025);
+    expect(season.getSorter()).toBe(sorter);
+    expect(season.getGenerator()).toBe(generator);
     expect(season.getRounds()).toEqual(rounds);
     expect(season.getStandings()).toEqual(standings);
     expect(season.getCurrentRound()).toBe(5);
