@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { LeagueSimulator } from '@/components/LeagueSimulator';
 import type { SerializedSeason } from '@/application/services/LeaguePersistenceService';
+import { simulateNextRound } from '@/app/actions';
 
 // Mock the server actions
 vi.mock('@/app/actions', () => ({
@@ -139,5 +140,224 @@ describe('LeagueSimulator - Button Visibility Logic', () => {
 
     // Should show "Season Complete!" badge instead
     expect(screen.getByText('Season Complete!')).toBeInTheDocument();
+  });
+});
+
+describe('LeagueSimulator - Viewing Results', () => {
+  const createMockSeason = (currentRound: number, totalTeams = 10): SerializedSeason => {
+    const rounds = [];
+    const totalRounds = totalTeams * 2 - 2;
+
+    for (let i = 1; i <= totalRounds; i++) {
+      rounds.push({
+        roundNumber: i,
+        matches: [
+          {
+            id: `match-${i}-1`,
+            homeTeamId: 'team-1',
+            awayTeamId: 'team-2',
+            result:
+              i <= currentRound
+                ? { homeGoals: 2, awayGoals: 1 }
+                : null,
+          },
+        ],
+      });
+    }
+
+    return {
+      id: 'season-1',
+      year: 2025,
+      league: {
+        id: 'league-1',
+        name: 'Test League',
+        sortingStrategy: 'points-goal-difference',
+        teams: Array.from({ length: totalTeams }, (_, i) => ({
+          id: `team-${i + 1}`,
+          name: `Team ${i + 1}`,
+          strength: 75,
+        })),
+      },
+      rounds,
+      standings: [],
+      currentRound,
+      fixtureGenerationStrategy: 'double-round-robin',
+      championId: null,
+    };
+  };
+
+  beforeEach(() => {
+    localStorageMock.clear();
+    vi.clearAllMocks();
+  });
+
+  it('should display last round results after loading a season with completed rounds', async () => {
+    // Round 1 has been played, currentRound = 1
+    const season = createMockSeason(1);
+    localStorageMock.setItem('current-season', JSON.stringify(season));
+    localStorageMock.setItem('championship-history', JSON.stringify([]));
+
+    render(<LeagueSimulator />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Test League')).toBeInTheDocument();
+    });
+
+    // Should be viewing round 1 (the latest completed round)
+    // Component should initialize viewingRound to currentRound (1)
+    expect(screen.getByText('Round 1 of 18')).toBeInTheDocument();
+
+    // Should show results heading (not "Fixtures")
+    expect(screen.getByText('Round 1 Results')).toBeInTheDocument();
+
+    // Should show the match result
+    expect(screen.getByText('2 - 1')).toBeInTheDocument();
+  });
+
+  it('should display the correct round results after simulating', async () => {
+    // Start with round 0 (no rounds played yet)
+    const initialSeason = createMockSeason(0);
+    localStorageMock.setItem('current-season', JSON.stringify(initialSeason));
+    localStorageMock.setItem('championship-history', JSON.stringify([]));
+
+    // Mock simulateNextRound to return season with round 1 completed
+    const updatedSeason = createMockSeason(1);
+    vi.mocked(simulateNextRound).mockResolvedValue(updatedSeason);
+
+    render(<LeagueSimulator />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Test League')).toBeInTheDocument();
+    });
+
+    // Find and click the simulate button
+    const simulateButton = screen.getByText('Simulate Next Round');
+    fireEvent.click(simulateButton);
+
+    // Wait for the round to be simulated
+    await waitFor(() => {
+      expect(simulateNextRound).toHaveBeenCalled();
+    });
+
+    // After simulation, should be viewing round 1 results (not round 2 fixtures)
+    await waitFor(() => {
+      expect(screen.getByText(/Round 1 Results/i)).toBeInTheDocument();
+    });
+
+    // Should show the match result
+    expect(screen.getByText('2 - 1')).toBeInTheDocument();
+  });
+});
+
+describe('LeagueSimulator - Championship History', () => {
+  const createMockSeason = (currentRound: number, championId: string | null = null): SerializedSeason => {
+    const totalTeams = 10;
+    const totalRounds = totalTeams * 2 - 2;
+    const rounds = [];
+
+    for (let i = 1; i <= totalRounds; i++) {
+      rounds.push({
+        roundNumber: i,
+        matches: [
+          {
+            id: `match-${i}-1`,
+            homeTeamId: 'team-1',
+            awayTeamId: 'team-2',
+            result:
+              i <= currentRound
+                ? { homeGoals: 2, awayGoals: 1 }
+                : null,
+          },
+        ],
+      });
+    }
+
+    return {
+      id: 'season-1',
+      year: 2025,
+      league: {
+        id: 'league-1',
+        name: 'Test League',
+        sortingStrategy: 'points-goal-difference',
+        teams: Array.from({ length: totalTeams }, (_, i) => ({
+          id: `team-${i + 1}`,
+          name: `Team ${i + 1}`,
+          strength: 75,
+        })),
+      },
+      rounds,
+      standings: [],
+      currentRound,
+      fixtureGenerationStrategy: 'double-round-robin',
+      championId,
+    };
+  };
+
+  beforeEach(() => {
+    localStorageMock.clear();
+    vi.clearAllMocks();
+  });
+
+  it('should display championship history when clicking the history button', async () => {
+    const season = createMockSeason(1);
+    localStorageMock.setItem('current-season', JSON.stringify(season));
+
+    // Set up championship history with some data
+    const championshipHistory = [
+      { year: 2024, teamId: 'team-1', teamName: 'Team 1' },
+      { year: 2023, teamId: 'team-2', teamName: 'Team 2' },
+      { year: 2022, teamId: 'team-1', teamName: 'Team 1' },
+    ];
+    localStorageMock.setItem('championship-history', JSON.stringify(championshipHistory));
+
+    render(<LeagueSimulator />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Test League')).toBeInTheDocument();
+    });
+
+    // Find and click the Championship History button
+    const historyButton = screen.getByText('Championship History');
+    fireEvent.click(historyButton);
+
+    // Dialog should open - wait for championship counts to appear
+    await waitFor(() => {
+      expect(screen.getByText('2 titles')).toBeInTheDocument();
+    });
+
+    // Should show Team 1 with 2 titles
+    expect(screen.getByText('2 titles')).toBeInTheDocument();
+
+    // Should show Team 2 with 1 title
+    expect(screen.getByText('1 title')).toBeInTheDocument();
+
+    // Should show years as badges
+    expect(screen.getByText('2024')).toBeInTheDocument();
+    expect(screen.getByText('2023')).toBeInTheDocument();
+    expect(screen.getByText('2022')).toBeInTheDocument();
+  });
+
+  it('should show empty state when there is no championship history', async () => {
+    const season = createMockSeason(1);
+    localStorageMock.setItem('current-season', JSON.stringify(season));
+    localStorageMock.setItem('championship-history', JSON.stringify([]));
+
+    render(<LeagueSimulator />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Test League')).toBeInTheDocument();
+    });
+
+    // Click the Championship History button
+    const historyButton = screen.getByText('Championship History');
+    fireEvent.click(historyButton);
+
+    // Dialog should open - wait for empty state message
+    await waitFor(() => {
+      expect(screen.getByText('No championships recorded yet.')).toBeInTheDocument();
+    });
+
+    // Should show full empty state message
+    expect(screen.getByText(/Complete a season to start recording champions/i)).toBeInTheDocument();
   });
 });
