@@ -231,4 +231,119 @@ describe('LeagueCoordinator - Season Completion', () => {
 
     expect(season.getChampionId()).toBeUndefined();
   });
+
+  it('should simulate all remaining rounds at once with simulateRemaining()', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    expect(season.getCurrentRound()).toBe(0);
+
+    const completeSeason = coordinator.simulateRemaining(season);
+
+    expect(completeSeason.getCurrentRound()).toBe(completeSeason.getTotalRounds());
+    expect(completeSeason.isComplete()).toBe(true);
+    expect(completeSeason.getChampionId()).not.toBeNull();
+  });
+
+  it('should handle simulateRemaining() on partially simulated season', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    // Simulate first round manually
+    season = coordinator.simulateNextRound(season);
+    expect(season.getCurrentRound()).toBe(1);
+
+    // Simulate remaining rounds
+    const completeSeason = coordinator.simulateRemaining(season);
+
+    expect(completeSeason.getCurrentRound()).toBe(completeSeason.getTotalRounds());
+    expect(completeSeason.isComplete()).toBe(true);
+  });
+});
+
+describe('LeagueCoordinator - Utility Methods', () => {
+  let coordinator: LeagueCoordinator;
+  let teams: Team[];
+  let league: League;
+
+  beforeEach(() => {
+    const matchSimService = new MatchSimulationService();
+    const leagueService = new LeagueService();
+    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+
+    coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
+
+    teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+      Team.create({ id: 'team-3', name: 'Team 3', strength: Strength.create(70) }),
+      Team.create({ id: 'team-4', name: 'Team 4', strength: Strength.create(85) }),
+    ];
+
+    league = League.create({
+      id: 'league-1',
+      name: 'Test League',
+      teams,
+      sorter: new PointsGoalDifferenceSorter(),
+    });
+  });
+
+  it('should get next fixtures before any simulation', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    const season = coordinator.createSeason(league, 2025, generator);
+
+    const nextFixtures = coordinator.getNextFixtures(season);
+
+    expect(nextFixtures).toBeDefined();
+    expect(nextFixtures.length).toBeGreaterThan(0);
+    expect(nextFixtures.length).toBe(teams.length / 2);
+  });
+
+  it('should get next fixtures after simulating some rounds', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    season = coordinator.simulateNextRound(season);
+
+    const nextFixtures = coordinator.getNextFixtures(season);
+
+    expect(nextFixtures).toBeDefined();
+    expect(nextFixtures.length).toBe(teams.length / 2);
+  });
+
+  it('should return empty array when no more fixtures available', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    season = coordinator.simulateRemaining(season);
+
+    const nextFixtures = coordinator.getNextFixtures(season);
+
+    expect(nextFixtures).toEqual([]);
+  });
+
+  it('should return true for canAdvance() when rounds remain', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    const season = coordinator.createSeason(league, 2025, generator);
+
+    expect(coordinator.canAdvance(season)).toBe(true);
+  });
+
+  it('should return true for canAdvance() after simulating some rounds', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    season = coordinator.simulateNextRound(season);
+
+    expect(coordinator.canAdvance(season)).toBe(true);
+  });
+
+  it('should return false for canAdvance() when all rounds complete', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator);
+
+    season = coordinator.simulateRemaining(season);
+
+    expect(coordinator.canAdvance(season)).toBe(false);
+  });
 });
