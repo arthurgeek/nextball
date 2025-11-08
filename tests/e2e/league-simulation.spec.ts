@@ -123,10 +123,18 @@ test.describe('League Simulation', () => {
     await simulateButton.click();
 
     // Should show "Round 1 Results" heading
-    await expect(page.getByText(/Round 1 Results/i)).toBeVisible();
+    const round1Heading = page.getByRole('heading', { name: /Round 1 Results/i });
+    await expect(round1Heading).toBeVisible();
 
-    // Should show match scores (look for score pattern like "2 - 1")
-    await expect(page.getByText(/\d+\s*-\s*\d+/)).toBeVisible();
+    // Scope to the results section and verify match scores appear
+    // Find the parent container of the results section
+    const resultsSection = page.locator('text=Round 1 Results').locator('..');
+
+    // Match scores follow pattern "N - N" where N is digits
+    // With 10 teams, we should have 5 matches per round
+    const scorePattern = /^\d+\s*-\s*\d+$/;
+    const matchScores = resultsSection.getByText(scorePattern);
+    await expect(matchScores).toHaveCount(5);
 
     // Should be viewing round 1
     await expect(page.getByText('Round 1 of 18')).toBeVisible();
@@ -135,7 +143,13 @@ test.describe('League Simulation', () => {
     await simulateButton.click();
 
     // Should now show "Round 2 Results" heading
-    await expect(page.getByText(/Round 2 Results/i)).toBeVisible();
+    const round2Heading = page.getByRole('heading', { name: /Round 2 Results/i });
+    await expect(round2Heading).toBeVisible();
+
+    // Verify round 2 also has 5 match scores
+    const resultsSection2 = page.locator('text=Round 2 Results').locator('..');
+    const matchScores2 = resultsSection2.getByText(scorePattern);
+    await expect(matchScores2).toHaveCount(5);
 
     // Should be viewing round 2
     await expect(page.getByText('Round 2 of 18')).toBeVisible();

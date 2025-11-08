@@ -14,8 +14,8 @@ export default defineConfig({
       enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['domain/**', 'application/**', 'components/**'],
-      exclude: ['node_modules/', 'tests/', '**/*.spec.ts', '**/*.spec.tsx', '**/*.test.ts'],
+      include: ['domain/**', 'application/**', 'components/**', 'di/**', 'app/**'],
+      exclude: ['node_modules/', 'tests/', '**/*.spec.ts', '**/*.spec.tsx', '**/*.test.ts', 'app/layout.tsx', 'app/globals.css'],
     },
   },
   resolve: {
