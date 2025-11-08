@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { LeagueTable } from './LeagueTable';
 import { FixturesResults } from './FixturesResults';
 import { ChampionshipHistoryDialog } from './ChampionshipHistoryDialog';
+import { StrategySelectionDialog } from './StrategySelectionDialog';
 import {
   createNewSeason,
   simulateNextRound,
@@ -19,6 +20,7 @@ export function LeagueSimulator() {
   const [viewingRound, setViewingRound] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showStrategyDialog, setShowStrategyDialog] = useState(false);
   const [championshipStats, setChampionshipStats] = useState<
     Array<{
       teamId: string;
@@ -103,12 +105,17 @@ export function LeagueSimulator() {
     }
   };
 
-  const handleStartNewSeason = async () => {
+  const handleStartNewSeason = () => {
+    setShowStrategyDialog(true);
+  };
+
+  const handleConfirmStrategies = async (generatorName: string, sorterName: string) => {
+    setShowStrategyDialog(false);
     setLoading(true);
     try {
       // Increment year if there's an existing season, otherwise use current year
       const year = season ? season.year + 1 : new Date().getFullYear();
-      const newSeason = await createNewSeason(year);
+      const newSeason = await createNewSeason(year, generatorName, sorterName);
       setSeason(newSeason);
       // Set viewing round to 1 (first fixtures) since currentRound is 0
       setViewingRound(1);
@@ -120,6 +127,10 @@ export function LeagueSimulator() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelStrategies = () => {
+    setShowStrategyDialog(false);
   };
 
   const handleSimulateNextRound = async () => {
@@ -312,6 +323,13 @@ export function LeagueSimulator() {
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
         stats={championshipStats}
+      />
+
+      {/* Strategy Selection Dialog */}
+      <StrategySelectionDialog
+        isOpen={showStrategyDialog}
+        onConfirm={handleConfirmStrategies}
+        onCancel={handleCancelStrategies}
       />
     </div>
   );

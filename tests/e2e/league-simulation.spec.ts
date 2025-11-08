@@ -155,3 +155,96 @@ test.describe('League Simulation', () => {
     await expect(page.getByText('Round 2 of 18')).toBeVisible();
   });
 });
+
+test.describe('Strategy Selection', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/league');
+    // Clear localStorage to start fresh
+    await page.evaluate(() => localStorage.clear());
+  });
+
+  test('should show strategy selection dialog when starting new season', async ({ page }) => {
+    // Click "Start New Season" button
+    const startButton = page.getByRole('button', { name: /Start New Season/i });
+    await startButton.click();
+
+    // Strategy selection dialog should appear
+    await expect(page.getByRole('heading', { name: /Create New Season/i })).toBeVisible();
+    await expect(page.getByText(/Select Fixture Format/i)).toBeVisible();
+    await expect(page.getByText(/Select Table Sorting/i)).toBeVisible();
+  });
+
+  test('should list available fixture generators in dropdown', async ({ page }) => {
+    // Click "Start New Season" button
+    await page.getByRole('button', { name: /Start New Season/i }).click();
+
+    // Find fixture generator select
+    const fixtureSelect = page.getByLabel(/Fixture Format/i);
+    await expect(fixtureSelect).toBeVisible();
+
+    // Should have options including Double Round Robin and Single Round Robin
+    await expect(fixtureSelect.locator('option:has-text("Double Round Robin")')).toBeVisible();
+    await expect(fixtureSelect.locator('option:has-text("Single Round Robin")')).toBeVisible();
+  });
+
+  test('should list available standing sorters in dropdown', async ({ page }) => {
+    // Click "Start New Season" button
+    await page.getByRole('button', { name: /Start New Season/i }).click();
+
+    // Find standing sorter select
+    const sorterSelect = page.getByLabel(/Table Sorting/i);
+    await expect(sorterSelect).toBeVisible();
+
+    // Should have options for different sorting strategies
+    await expect(sorterSelect.locator('option:has-text("Points Goal Difference")')).toBeVisible();
+    await expect(sorterSelect.locator('option:has-text("Points Head To Head")')).toBeVisible();
+    await expect(sorterSelect.locator('option:has-text("Points Wins")')).toBeVisible();
+  });
+
+  test('should create season with selected strategies', async ({ page }) => {
+    // Click "Start New Season" button
+    await page.getByRole('button', { name: /Start New Season/i }).click();
+
+    // Select Single Round Robin generator
+    await page.getByLabel(/Fixture Format/i).selectOption({ label: /Single Round Robin/i });
+
+    // Select Points Wins sorter
+    await page.getByLabel(/Table Sorting/i).selectOption({ label: /Points Wins/i });
+
+    // Confirm creation
+    await page.getByRole('button', { name: /Create Season/i }).click();
+
+    // Season should be created
+    // With Single Round Robin and 10 teams, we expect 9 rounds (not 18)
+    await expect(page.getByText(/Round 1 of 9/)).toBeVisible({ timeout: 5000 });
+
+    // League table should be visible
+    await expect(page.getByRole('heading', { name: /League Table/i })).toBeVisible();
+  });
+
+  test('should allow canceling strategy selection', async ({ page }) => {
+    // Click "Start New Season" button
+    await page.getByRole('button', { name: /Start New Season/i }).click();
+
+    // Dialog should be visible
+    await expect(page.getByRole('heading', { name: /Create New Season/i })).toBeVisible();
+
+    // Click cancel button
+    await page.getByRole('button', { name: /Cancel/i }).click();
+
+    // Dialog should close and we should still be on the welcome screen
+    await expect(page.getByRole('heading', { name: /Create New Season/i })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: /Start New Season/i })).toBeVisible();
+  });
+
+  test('should use default strategies if none selected', async ({ page }) => {
+    // Click "Start New Season" button
+    await page.getByRole('button', { name: /Start New Season/i }).click();
+
+    // Don't change any selections, just create
+    await page.getByRole('button', { name: /Create Season/i }).click();
+
+    // Season should be created with defaults (Double Round Robin = 18 rounds)
+    await expect(page.getByText(/Round 1 of 18/)).toBeVisible({ timeout: 5000 });
+  });
+});

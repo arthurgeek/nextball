@@ -90,7 +90,9 @@ export async function simulateMatch(
  * Create a new league season with default teams
  */
 export async function createNewSeason(
-  year: number
+  year: number,
+  fixtureGeneratorName: string = 'double-round-robin',
+  standingSorterName: string = 'points-goal-difference'
 ): Promise<SerializedSeason> {
   const coordinator = getLeagueCoordinator();
   const persistenceService = getLeaguePersistenceService();
@@ -149,17 +151,19 @@ export async function createNewSeason(
     }),
   ];
 
-  const {PointsGoalDifferenceSorter} = await import('@/application/strategies/standings/PointsGoalDifferenceSorter');
-  const {DoubleRoundRobinGenerator} = await import('@/application/strategies/fixtures/DoubleRoundRobinGenerator');
+  // Get strategies from registry based on user selection
+  const { StrategyRegistry } = await import('@/application/StrategyRegistry');
+  const sorter = StrategyRegistry.createSorter(standingSorterName);
+  const generator = StrategyRegistry.createGenerator(fixtureGeneratorName);
 
   const league = League.create({
     id: uuidv4(),
     name: 'Premier League',
     teams,
-    sorter: new PointsGoalDifferenceSorter(),
+    sorter,
   });
 
-  const season = coordinator.createSeason(league, year, new DoubleRoundRobinGenerator());
+  const season = coordinator.createSeason(league, year, generator);
 
   return persistenceService.serializeSeason(season);
 }
@@ -203,4 +207,24 @@ export async function getChampionshipStats(): Promise<
     count: data.count,
     years: data.years,
   }));
+}
+
+/**
+ * Get available standing sorter strategies
+ */
+export async function getAvailableSorters(): Promise<
+  Array<{ name: string; displayName: string }>
+> {
+  const { StrategyRegistry } = await import('@/application/StrategyRegistry');
+  return StrategyRegistry.listSorters();
+}
+
+/**
+ * Get available fixture generator strategies
+ */
+export async function getAvailableGenerators(): Promise<
+  Array<{ name: string; displayName: string }>
+> {
+  const { StrategyRegistry } = await import('@/application/StrategyRegistry');
+  return StrategyRegistry.listGenerators();
 }

@@ -6,6 +6,11 @@ import { PointsWinsSorter } from './strategies/standings/PointsWinsSorter';
 import { DoubleRoundRobinGenerator } from './strategies/fixtures/DoubleRoundRobinGenerator';
 import { SingleRoundRobinGenerator } from './strategies/fixtures/SingleRoundRobinGenerator';
 
+export interface StrategyListItem {
+  name: string;
+  displayName: string;
+}
+
 /**
  * Global registry for strategy implementations.
  * Allows users to register custom strategies without modifying our code.
@@ -30,6 +35,17 @@ class StrategyRegistryClass {
 
     this.registerGenerator('double-round-robin', DoubleRoundRobinGenerator);
     this.registerGenerator('single-round-robin', SingleRoundRobinGenerator);
+  }
+
+  /**
+   * Convert kebab-case to Title Case for display names.
+   * Example: "points-goal-difference" → "Points Goal Difference"
+   */
+  private toDisplayName(kebabCase: string): string {
+    return kebabCase
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   /**
@@ -74,6 +90,36 @@ class StrategyRegistryClass {
       );
     }
     return new GeneratorClass();
+  }
+
+  /**
+   * List all available standing sorter strategies.
+   * Returns array of {name, displayName} for use in UI dropdowns.
+   */
+  listSorters(): StrategyListItem[] {
+    const items: StrategyListItem[] = [];
+    this.sorters.forEach((_, name) => {
+      items.push({
+        name,
+        displayName: this.toDisplayName(name),
+      });
+    });
+    return items;
+  }
+
+  /**
+   * List all available fixture generator strategies.
+   * Returns array of {name, displayName} for use in UI dropdowns.
+   */
+  listGenerators(): StrategyListItem[] {
+    const items: StrategyListItem[] = [];
+    this.generators.forEach((_, name) => {
+      items.push({
+        name,
+        displayName: this.toDisplayName(name),
+      });
+    });
+    return items;
   }
 }
 

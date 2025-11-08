@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LeagueSimulator } from '@/components/LeagueSimulator';
 import type { SerializedSeason } from '@/application/services/LeaguePersistenceService';
 import { simulateNextRound } from '@/app/actions';
@@ -85,28 +85,32 @@ describe('Simulate button visibility after round completion', () => {
     vi.clearAllMocks();
   });
 
-  it('shows simulate button when viewing latest completed round', () => {
+  it('shows simulate button when viewing latest completed round', async () => {
     const season = createMockSeason(1);
     localStorageMock.setItem('current-season', JSON.stringify(season));
     localStorageMock.setItem('championship-history', JSON.stringify([]));
 
     render(<LeagueSimulator />);
 
-    expect(screen.getByText('Test League')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Test League')).toBeInTheDocument();
+    });
     expect(screen.getByText('Simulate Next Round')).toBeInTheDocument();
   });
 
-  it('shows simulate button when viewing next unplayed round', () => {
+  it('shows simulate button when viewing next unplayed round', async () => {
     const season = createMockSeason(1);
     localStorageMock.setItem('current-season', JSON.stringify(season));
     localStorageMock.setItem('championship-history', JSON.stringify([]));
 
     render(<LeagueSimulator />);
 
-    expect(screen.getByText('Simulate Next Round')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Simulate Next Round')).toBeInTheDocument();
+    });
   });
 
-  it('hides simulate button when season is complete', () => {
+  it('hides simulate button when season is complete', async () => {
     const totalTeams = 10;
     const totalRounds = totalTeams * 2 - 2;
     const season = createMockSeason(totalRounds, totalTeams);
@@ -115,8 +119,10 @@ describe('Simulate button visibility after round completion', () => {
 
     render(<LeagueSimulator />);
 
+    await waitFor(() => {
+      expect(screen.getByText('Season Complete!')).toBeInTheDocument();
+    });
     expect(screen.queryByText('Simulate Next Round')).not.toBeInTheDocument();
-    expect(screen.getByText('Season Complete!')).toBeInTheDocument();
   });
 
   it('shows simulate button after simulating a round', async () => {
@@ -150,27 +156,31 @@ describe('Round results display after simulation', () => {
     vi.clearAllMocks();
   });
 
-  it('displays latest completed round results on load', () => {
+  it('displays latest completed round results on load', async () => {
     const season = createMockSeason(1);
     localStorageMock.setItem('current-season', JSON.stringify(season));
     localStorageMock.setItem('championship-history', JSON.stringify([]));
 
     render(<LeagueSimulator />);
 
-    expect(screen.getByText('Round 1 of 18')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Round 1 of 18')).toBeInTheDocument();
+    });
     expect(screen.getByText('Round 1 Results')).toBeInTheDocument();
     expect(screen.getByText('2 - 1')).toBeInTheDocument();
   });
 
-  it('shows results heading not fixtures heading when round is complete', () => {
+  it('shows results heading not fixtures heading when round is complete', async () => {
     const season = createMockSeason(3);
     localStorageMock.setItem('current-season', JSON.stringify(season));
     localStorageMock.setItem('championship-history', JSON.stringify([]));
 
     render(<LeagueSimulator />);
 
+    await waitFor(() => {
+      expect(screen.getByText(/Round 3 Results/i)).toBeInTheDocument();
+    });
     // Should say "Results" not "Fixtures"
-    expect(screen.getByText(/Round 3 Results/i)).toBeInTheDocument();
     expect(screen.queryByText(/Round 3 Fixtures/i)).not.toBeInTheDocument();
   });
 

@@ -190,3 +190,96 @@ describe('StrategyRegistry - Open/Closed Principle', () => {
     // No modification to StrategyRegistry source code was needed!
   });
 });
+
+describe('StrategyRegistry - Listing Available Strategies', () => {
+  it('should list all available standing sorters', () => {
+    const sorters = StrategyRegistry.listSorters();
+
+    // Should include built-in sorters
+    expect(sorters.length).toBeGreaterThanOrEqual(3);
+
+    const sorterNames = sorters.map((s) => s.name);
+    expect(sorterNames).toContain('points-goal-difference');
+    expect(sorterNames).toContain('points-head-to-head');
+    expect(sorterNames).toContain('points-wins');
+  });
+
+  it('should list all available fixture generators', () => {
+    const generators = StrategyRegistry.listGenerators();
+
+    // Should include built-in generators
+    expect(generators.length).toBeGreaterThanOrEqual(2);
+
+    const generatorNames = generators.map((g) => g.name);
+    expect(generatorNames).toContain('double-round-robin');
+    expect(generatorNames).toContain('single-round-robin');
+  });
+
+  it('should return sorter list items with name and displayName', () => {
+    const sorters = StrategyRegistry.listSorters();
+
+    sorters.forEach((sorter) => {
+      expect(sorter).toHaveProperty('name');
+      expect(sorter).toHaveProperty('displayName');
+      expect(typeof sorter.name).toBe('string');
+      expect(typeof sorter.displayName).toBe('string');
+      expect(sorter.displayName.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should return generator list items with name and displayName', () => {
+    const generators = StrategyRegistry.listGenerators();
+
+    generators.forEach((generator) => {
+      expect(generator).toHaveProperty('name');
+      expect(generator).toHaveProperty('displayName');
+      expect(typeof generator.name).toBe('string');
+      expect(typeof generator.displayName).toBe('string');
+      expect(generator.displayName.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should include custom sorters in list after registration', () => {
+    const customName = 'list-test-custom-sorter';
+    StrategyRegistry.registerSorter(customName, MockCustomSorter);
+
+    const sorters = StrategyRegistry.listSorters();
+    const customSorter = sorters.find((s) => s.name === customName);
+
+    expect(customSorter).toBeDefined();
+    expect(customSorter?.displayName).toBeTruthy();
+  });
+
+  it('should include custom generators in list after registration', () => {
+    const customName = 'list-test-custom-generator';
+    StrategyRegistry.registerGenerator(customName, MockCustomGenerator);
+
+    const generators = StrategyRegistry.listGenerators();
+    const customGenerator = generators.find((g) => g.name === customName);
+
+    expect(customGenerator).toBeDefined();
+    expect(customGenerator?.displayName).toBeTruthy();
+  });
+
+  it('should generate readable display names from strategy names', () => {
+    const sorters = StrategyRegistry.listSorters();
+
+    // Points-goal-difference should have a readable display name
+    const pgdSorter = sorters.find((s) => s.name === 'points-goal-difference');
+    expect(pgdSorter?.displayName).toMatch(/Points.*Goal.*Difference/i);
+
+    // Points-head-to-head should have a readable display name
+    const hthSorter = sorters.find((s) => s.name === 'points-head-to-head');
+    expect(hthSorter?.displayName).toMatch(/Points.*Head.*Head/i);
+  });
+
+  it('should return empty array if no strategies registered (hypothetical)', () => {
+    // This tests the contract - if we had a fresh registry, listSorters/listGenerators
+    // should return arrays (possibly empty), not null/undefined
+    const sorters = StrategyRegistry.listSorters();
+    const generators = StrategyRegistry.listGenerators();
+
+    expect(Array.isArray(sorters)).toBe(true);
+    expect(Array.isArray(generators)).toBe(true);
+  });
+});
