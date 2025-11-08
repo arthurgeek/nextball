@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LeaguePersistenceService } from '@/application/services/LeaguePersistenceService';
 import { Season } from '@/domain/entities/Season';
 import { League } from '@/domain/entities/League';
@@ -12,11 +12,33 @@ import { Form, FormResult } from '@/domain/value-objects/Form';
 import { PointsGoalDifferenceSorter } from '@/application/strategies/standings/PointsGoalDifferenceSorter';
 import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
 
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
 describe('LeaguePersistenceService', () => {
   let service: LeaguePersistenceService;
   let season: Season;
 
   beforeEach(() => {
+    // Setup localStorage mock
+    global.localStorage = localStorageMock as any;
+    localStorageMock.clear();
+
     service = new LeaguePersistenceService();
 
     // Create test season
@@ -74,11 +96,6 @@ describe('LeaguePersistenceService', () => {
       currentRound: 1,
       championId: 'team-1',
     });
-
-    // Clear localStorage before each test
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-    }
   });
 
   describe('serializeSeason / deserializeSeason', () => {
@@ -150,69 +167,59 @@ describe('LeaguePersistenceService', () => {
 
   describe('SSR handling', () => {
     it('should return empty array from getChampionshipHistory in SSR', () => {
-      // Mock SSR environment
-      const originalWindow = global.window;
-      // @ts-expect-error - Intentionally setting to undefined for SSR test
-      global.window = undefined;
+      // Mock SSR environment by removing window
+      vi.stubGlobal('window', undefined);
 
       const history = service.getChampionshipHistory();
 
       expect(history).toEqual([]);
 
       // Restore
-      global.window = originalWindow;
+      vi.unstubAllGlobals();
     });
 
     it('should return null from loadSeason in SSR', () => {
-      // Mock SSR environment
-      const originalWindow = global.window;
-      // @ts-expect-error - Intentionally setting to undefined for SSR test
-      global.window = undefined;
+      // Mock SSR environment by removing window
+      vi.stubGlobal('window', undefined);
 
       const loaded = service.loadSeason();
 
       expect(loaded).toBeNull();
 
       // Restore
-      global.window = originalWindow;
+      vi.unstubAllGlobals();
     });
 
     it('should not throw from saveSeason in SSR', () => {
-      // Mock SSR environment
-      const originalWindow = global.window;
-      // @ts-expect-error - Intentionally setting to undefined for SSR test
-      global.window = undefined;
+      // Mock SSR environment by removing window
+      vi.stubGlobal('window', undefined);
 
       expect(() => service.saveSeason(season)).not.toThrow();
 
       // Restore
-      global.window = originalWindow;
+      vi.unstubAllGlobals();
     });
 
     it('should not throw from saveChampionship in SSR', () => {
-      // Mock SSR environment
-      const originalWindow = global.window;
-      // @ts-expect-error - Intentionally setting to undefined for SSR test
-      global.window = undefined;
+      // Mock SSR environment by removing window
+      vi.stubGlobal('window', undefined);
 
       expect(() =>
         service.saveChampionship({ year: 2025, teamId: 'team-1', teamName: 'Team 1' })
       ).not.toThrow();
 
       // Restore
-      global.window = originalWindow;
+      vi.unstubAllGlobals();
     });
 
     it('should not throw from clearSeason in SSR', () => {
-      // Mock SSR environment
-      const originalWindow = global.window;
-      // @ts-expect-error - Intentionally setting to undefined for SSR test
-      global.window = undefined;
+      // Mock SSR environment by removing window
+      vi.stubGlobal('window', undefined);
 
       expect(() => service.clearSeason()).not.toThrow();
 
       // Restore
-      global.window = originalWindow;
+      vi.unstubAllGlobals();
     });
   });
 });
