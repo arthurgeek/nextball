@@ -299,6 +299,72 @@ describe('Season - Immutability', () => {
     expect(newSeason.getSorter()).toBe(newSorter);
     expect(season.getSorter()).toBe(sorter); // Original unchanged
   });
+
+  it('should return new instance with withGenerator', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
+    const rounds: Round[] = [];
+    const standings = [Standing.create({ team: teams[0] })];
+
+    const season = Season.create({
+      id: 'season-1',
+      league,
+      year: 2025,
+      generator,
+      sorter,
+      rounds,
+      standings,
+    });
+
+    const newGenerator = new DoubleRoundRobinGenerator();
+    const newSeason = season.withGenerator(newGenerator);
+
+    expect(newSeason).not.toBe(season);
+    expect(newSeason.getGenerator()).toBe(newGenerator);
+    expect(season.getGenerator()).toBe(generator); // Original unchanged
+  });
+
+  it('should advance to next round with advanceRound', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
+    const rounds: Round[] = [];
+    const standings = [Standing.create({ team: teams[0] })];
+
+    const season = Season.create({
+      id: 'season-1',
+      league,
+      year: 2025,
+      generator,
+      sorter,
+      rounds,
+      standings,
+      currentRound: 3,
+    });
+
+    const nextSeason = season.advanceRound();
+
+    expect(nextSeason).not.toBe(season);
+    expect(nextSeason.getCurrentRound()).toBe(4);
+    expect(season.getCurrentRound()).toBe(3); // Original unchanged
+  });
 });
 
 describe('Season - Season Completion', () => {

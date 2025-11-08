@@ -243,4 +243,52 @@ describe('Standing - Getters', () => {
     expect(standing.getPoints()).toBe(33); // 10*3 + 3*1
     expect(standing.getGoalDifference()).toBe(17); // 32 - 15
   });
+
+  it('should return positive position change when team moved up', () => {
+    const team = Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) });
+    const standing = Standing.create({
+      team,
+      position: 2,
+      previousPosition: 5,
+    });
+
+    // Moved from 5 to 2 = +3 positions up
+    expect(standing.getPositionChange()).toBe(3);
+  });
+
+  it('should return negative position change when team moved down', () => {
+    const team = Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) });
+    const standing = Standing.create({
+      team,
+      position: 5,
+      previousPosition: 2,
+    });
+
+    // Moved from 2 to 5 = -3 positions down
+    expect(standing.getPositionChange()).toBe(-3);
+  });
+
+  it('should return zero position change when previousPosition is zero', () => {
+    const team = Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) });
+    const standing = Standing.create({
+      team,
+      position: 3,
+      previousPosition: 0,
+    });
+
+    // No previous position = 0 change
+    expect(standing.getPositionChange()).toBe(0);
+  });
+
+  it('should return zero position change when position unchanged', () => {
+    const team = Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) });
+    const standing = Standing.create({
+      team,
+      position: 3,
+      previousPosition: 3,
+    });
+
+    // Same position = 0 change
+    expect(standing.getPositionChange()).toBe(0);
+  });
 });

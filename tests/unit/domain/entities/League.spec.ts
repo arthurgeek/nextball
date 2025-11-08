@@ -114,4 +114,75 @@ describe('League - Getters', () => {
     expect(league.getTeams()[0].getId()).toBe('team-1');
     expect(league.getTeams()[1].getId()).toBe('team-2');
   });
+
+  it('should return correct team count', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+      Team.create({ id: 'team-3', name: 'Team 3', strength: Strength.create(85) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    expect(league.getTeamCount()).toBe(3);
+  });
+
+  it('should find team by id', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+      Team.create({ id: 'team-3', name: 'Team 3', strength: Strength.create(85) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    const team = league.getTeamById('team-2');
+    expect(team).toBeDefined();
+    expect(team?.getId()).toBe('team-2');
+    expect(team?.getName()).toBe('Team 2');
+  });
+
+  it('should return undefined when team id not found', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    const team = league.getTeamById('team-999');
+    expect(team).toBeUndefined();
+  });
+});
+
+describe('League - withTeam', () => {
+  it('should add team and return new instance', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    const newTeam = Team.create({ id: 'team-3', name: 'Team 3', strength: Strength.create(85) });
+    const newLeague = league.withTeam(newTeam);
+
+    expect(newLeague).not.toBe(league);
+    expect(newLeague.getTeamCount()).toBe(3);
+    expect(league.getTeamCount()).toBe(2); // Original unchanged
+    expect(newLeague.getTeamById('team-3')).toBeDefined();
+    expect(league.getTeamById('team-3')).toBeUndefined(); // Original unchanged
+  });
 });
