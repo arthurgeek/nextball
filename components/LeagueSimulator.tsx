@@ -255,7 +255,7 @@ export function LeagueSimulator() {
             </button>
           )}
 
-          {isViewingNext && canSimulate && (
+          {(isViewingNext || isViewingLatest) && canSimulate && (
             <button
               className="btn btn-sm btn-success"
               onClick={handleSimulateNextRound}
