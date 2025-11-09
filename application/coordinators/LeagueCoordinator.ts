@@ -68,15 +68,21 @@ export class LeagueCoordinator {
       throw new Error('Round already completed');
     }
 
-    // Simulate all matches in the round
-    // TODO: Calculate actual team form from recent results
-    // For now using neutral form as placeholder
+    // Simulate all matches in the round using each team's current form
+    // Neutral form used as fallback when standing not found (e.g., first round)
     const neutralForm = Form.create({
       results: [FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW]
     });
 
+    const getTeamForm = (teamId: string): Form => {
+      const standing = season.getStandings().find(s => s.getTeam().getId() === teamId);
+      return standing ? standing.getForm() : neutralForm;
+    };
+
     const simulatedMatches = round.getMatches().map((match) => {
-      return this.matchSimulationService.simulate(match, neutralForm, neutralForm);
+      const homeForm = getTeamForm(match.getHomeTeam().getId());
+      const awayForm = getTeamForm(match.getAwayTeam().getId());
+      return this.matchSimulationService.simulate(match, homeForm, awayForm);
     });
 
     // Update the round with simulated matches

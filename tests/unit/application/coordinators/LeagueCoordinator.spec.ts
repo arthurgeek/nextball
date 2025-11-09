@@ -165,6 +165,27 @@ describe('LeagueCoordinator - Season Simulation', () => {
     expect(updatedSeason.getStandings().length).toBe(teams.length);
   });
 
+  it('should simulate first round with initialized standings (neutral form)', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+
+    // First round has initialized standings with no games played (neutral form)
+    expect(season.getStandings()).toHaveLength(teams.length);
+    season.getStandings().forEach((standing) => {
+      expect(standing.getForm().getResults()).toHaveLength(0); // No form yet
+    });
+
+    // Simulating should work with initialized standings
+    const updatedSeason = coordinator.simulateNextRound(season);
+
+    // Matches should be simulated successfully
+    const round1 = updatedSeason.getRounds()[0];
+    expect(round1.isComplete()).toBe(true);
+    round1.getMatches().forEach((match) => {
+      expect(match.getResult()).toBeDefined();
+    });
+  });
+
   it('should assign match results after simulation', () => {
     const generator = new DoubleRoundRobinGenerator();
     const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
@@ -341,6 +362,28 @@ describe('LeagueCoordinator - Utility Methods', () => {
     season = coordinator.simulateRemaining(season);
 
     expect(coordinator.canAdvance(season)).toBe(false);
+  });
+
+  it('should use neutral form fallback when team not found in standings', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    let season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+
+    // Manually create a scenario where standings are missing a team
+    // Remove one team from standings to trigger the neutral form fallback
+    const filteredStandings = season.getStandings().slice(0, -1); // Remove last team's standing
+
+    // Create a season with incomplete standings
+    const seasonWithMissingStanding = season.withStandings(filteredStandings);
+
+    // Simulating should still work due to neutral form fallback
+    const updatedSeason = coordinator.simulateNextRound(seasonWithMissingStanding);
+
+    // Verify matches were simulated despite missing standing
+    const round1 = updatedSeason.getRounds()[0];
+    expect(round1.isComplete()).toBe(true);
+    round1.getMatches().forEach((match) => {
+      expect(match.getResult()).toBeDefined();
+    });
   });
 
   describe('error handling', () => {

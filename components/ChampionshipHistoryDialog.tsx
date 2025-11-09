@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Icon } from '@iconify-icon/react';
 
 interface ChampionshipHistoryDialogProps {
@@ -16,19 +17,37 @@ interface ChampionshipHistoryDialogProps {
 /**
  * Client Component displaying championship history across all seasons.
  * Shows each team's total wins and the years they won.
+ * Uses CSS-based modal control (modal-open class).
  */
 export function ChampionshipHistoryDialog({
   isOpen,
   onClose,
   stats,
 }: ChampionshipHistoryDialogProps) {
-  if (!isOpen) return null;
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   // Sort by championship count (descending)
   const sortedStats = [...stats].sort((a, b) => b.count - a.count);
 
+  // Handle ESC key globally when dialog is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   return (
-    <dialog className="modal modal-open">
+    <dialog
+      ref={dialogRef}
+      className={`modal ${isOpen ? 'modal-open' : ''}`}
+    >
       <div className="modal-box max-w-2xl">
         <h3 className="font-bold text-2xl mb-4">Championship History</h3>
 
@@ -83,8 +102,9 @@ export function ChampionshipHistoryDialog({
           </button>
         </div>
       </div>
+      {/* Backdrop - clicking outside closes the dialog */}
       <form method="dialog" className="modal-backdrop" onClick={onClose}>
-        <button type="button">close</button>
+        <button type="button" onClick={onClose}>close</button>
       </form>
     </dialog>
   );

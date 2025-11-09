@@ -102,7 +102,7 @@ export class Season {
   }
 
   getTotalRounds(): number {
-    return this.league.getTotalRounds();
+    return this.rounds.length;
   }
 
   isComplete(): boolean {

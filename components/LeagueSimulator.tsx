@@ -115,7 +115,11 @@ export function LeagueSimulator() {
     try {
       // Increment year if there's an existing season, otherwise use current year
       const year = season ? season.year + 1 : new Date().getFullYear();
-      const newSeason = await createNewSeason(year, generatorName, sorterName);
+
+      // Pass existing teams to preserve IDs across seasons
+      const existingTeams = season?.league.teams;
+
+      const newSeason = await createNewSeason(year, generatorName, sorterName, existingTeams);
       setSeason(newSeason);
       // Set viewing round to 1 (first fixtures) since currentRound is 0
       setViewingRound(1);
@@ -139,14 +143,32 @@ export function LeagueSimulator() {
     setLoading(true);
     try {
       const updated = await simulateNextRound(season);
+
+      // If season just completed, save championship to history (client-side only)
+      if (updated.championId && !season.championId) {
+        // Find the champion team name
+        const championTeam = updated.league.teams.find(
+          (t) => t.id === updated.championId
+        );
+        if (championTeam) {
+          // Save to localStorage (client-side persistence)
+          const historyJson = localStorage.getItem('championship-history');
+          const history = historyJson ? JSON.parse(historyJson) : [];
+          history.push({
+            year: updated.year,
+            teamId: updated.championId,
+            teamName: championTeam.name,
+          });
+          localStorage.setItem('championship-history', JSON.stringify(history));
+
+          // Reload stats to show the new champion
+          loadChampionshipStats();
+        }
+      }
+
       setSeason(updated);
       // Show the results of the round that was just simulated
       setViewingRound(updated.currentRound);
-
-      // Reload championship stats if season completed
-      if (updated.championId) {
-        await loadChampionshipStats();
-      }
     } catch (error) {
       console.error('Failed to simulate round:', error);
       alert('Failed to simulate round');
@@ -176,32 +198,42 @@ export function LeagueSimulator() {
 
   if (!season) {
     return (
-      <div className="max-w-4xl mx-auto p-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold">League Simulator</h1>
-          <p className="opacity-70">
-            Simulate a full 10-team league season with round-by-round results
-          </p>
-          <button
-            className="btn btn-primary btn-lg"
-            onClick={handleStartNewSeason}
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="loading loading-spinner" />
-            ) : (
-              <>
-                <Icon icon="lucide:play" width="20" height="20" />
-                Start New Season
-              </>
-            )}
-          </button>
+      <>
+        <div className="max-w-4xl mx-auto p-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl font-bold">League Simulator</h1>
+            <p className="opacity-70">
+              Simulate a full 10-team league season with round-by-round results
+            </p>
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={handleStartNewSeason}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="loading loading-spinner" />
+              ) : (
+                <>
+                  <Icon icon="lucide:play" width="20" height="20" />
+                  Start New Season
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+
+        {/* Strategy Selection Dialog - must be rendered even when no season */}
+        <StrategySelectionDialog
+          isOpen={showStrategyDialog}
+          onConfirm={handleConfirmStrategies}
+          onCancel={handleCancelStrategies}
+        />
+      </>
     );
   }
 
-  const isSeasonComplete = season.currentRound >= season.league.teams.length * 2 - 2;
+  // Check if season is complete based on actual number of rounds (not hardcoded formula)
+  const isSeasonComplete = season.currentRound >= season.rounds.length;
   const canSimulate = !isSeasonComplete;
   // We're viewing the "next" round if viewingRound is currentRound + 1
   const isViewingNext = viewingRound === season.currentRound + 1;
@@ -245,7 +277,7 @@ export function LeagueSimulator() {
         <button
           className="btn btn-sm"
           onClick={handlePreviousRound}
-          disabled={viewingRound <= 1}
+          disabled={viewingRound <= 1 || loading}
         >
           <Icon icon="lucide:chevron-left" width="16" height="16" />
           Previous
@@ -256,10 +288,11 @@ export function LeagueSimulator() {
             Round {viewingRound} of {season.rounds.length}
           </span>
 
-          {!isViewingNext && !isViewingLatest && (
+          {!isViewingNext && !isViewingLatest && !isSeasonComplete && (
             <button
               className="btn btn-sm btn-primary"
               onClick={handleGoToLatest}
+              disabled={loading}
             >
               <Icon icon="lucide:fast-forward" width="16" height="16" />
               Go to Latest
@@ -273,13 +306,11 @@ export function LeagueSimulator() {
               disabled={loading}
             >
               {loading ? (
-                <span className="loading loading-spinner loading-sm" />
+                <span className="loading loading-spinner loading-xs" />
               ) : (
-                <>
-                  <Icon icon="lucide:play" width="16" height="16" />
-                  Simulate Next Round
-                </>
+                <Icon icon="lucide:play" width="16" height="16" />
               )}
+              Simulate Next Round
             </button>
           )}
 
@@ -293,7 +324,7 @@ export function LeagueSimulator() {
         <button
           className="btn btn-sm"
           onClick={handleNextRound}
-          disabled={viewingRound >= season.currentRound}
+          disabled={viewingRound >= season.currentRound || loading}
         >
           Next
           <Icon icon="lucide:chevron-right" width="16" height="16" />

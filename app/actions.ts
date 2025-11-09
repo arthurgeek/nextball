@@ -56,8 +56,7 @@ export async function simulateMatch(
     awayTeam,
   });
 
-  // Simulate
-  // TODO: Use actual team form once available
+  // Simulate standalone match (no league context, so use neutral form)
   const neutralForm = Form.create({
     results: [FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW]
   });
@@ -93,68 +92,82 @@ export async function simulateMatch(
 
 /**
  * Create a new league season with default teams
+ * @param existingTeams Optional array of teams from previous season to preserve IDs
  */
 export async function createNewSeason(
   year: number,
   fixtureGeneratorName: string = 'double-round-robin',
-  standingSorterName: string = 'points-goal-difference'
+  standingSorterName: string = 'points-goal-difference',
+  existingTeams?: Array<{ id: string; name: string; strength: number }>
 ): Promise<SerializedSeason> {
   const coordinator = getLeagueCoordinator();
   const persistenceService = getLeaguePersistenceService();
 
-  // Create 10 teams with varying strengths
-  const teams = [
-    Team.create({
-      id: uuidv4(),
-      name: 'Manchester City',
-      strength: Strength.create(90),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Arsenal',
-      strength: Strength.create(88),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Liverpool',
-      strength: Strength.create(87),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Chelsea',
-      strength: Strength.create(82),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Newcastle',
-      strength: Strength.create(80),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Tottenham',
-      strength: Strength.create(79),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Brighton',
-      strength: Strength.create(75),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Aston Villa',
-      strength: Strength.create(74),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'West Ham',
-      strength: Strength.create(72),
-    }),
-    Team.create({
-      id: uuidv4(),
-      name: 'Fulham',
-      strength: Strength.create(70),
-    }),
-  ];
+  let teams: Team[];
+  if (existingTeams && existingTeams.length > 0) {
+    // Reuse teams from previous season to maintain consistent IDs
+    teams = existingTeams.map((t) =>
+      Team.create({
+        id: t.id,
+        name: t.name,
+        strength: Strength.create(t.strength),
+      })
+    );
+  } else {
+    // First time - create new teams with UUIDs
+    teams = [
+      Team.create({
+        id: uuidv4(),
+        name: 'Manchester City',
+        strength: Strength.create(90),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Arsenal',
+        strength: Strength.create(88),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Liverpool',
+        strength: Strength.create(87),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Chelsea',
+        strength: Strength.create(82),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Newcastle',
+        strength: Strength.create(80),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Tottenham',
+        strength: Strength.create(79),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Brighton',
+        strength: Strength.create(75),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Aston Villa',
+        strength: Strength.create(74),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'West Ham',
+        strength: Strength.create(72),
+      }),
+      Team.create({
+        id: uuidv4(),
+        name: 'Fulham',
+        strength: Strength.create(70),
+      }),
+    ];
+  }
 
   // Get strategies from registry based on user selection
   const { StrategyRegistry } = await import('@/application/StrategyRegistry');

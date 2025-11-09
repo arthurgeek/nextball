@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Icon } from '@iconify-icon/react';
 import { getAvailableSorters, getAvailableGenerators } from '@/app/actions';
 
@@ -12,7 +12,7 @@ interface StrategySelectionDialogProps {
 
 /**
  * Dialog for selecting fixture generation and standing sorting strategies
- * when creating a new season.
+ * when creating a new season. Uses CSS-based modal control (modal-open class).
  */
 export function StrategySelectionDialog({
   isOpen,
@@ -23,25 +23,28 @@ export function StrategySelectionDialog({
   const [sorters, setSorters] = useState<Array<{ name: string; displayName: string }>>([]);
   const [selectedGenerator, setSelectedGenerator] = useState('double-round-robin');
   const [selectedSorter, setSelectedSorter] = useState('points-goal-difference');
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  // Load available strategies when dialog opens
+  const loadStrategies = async () => {
+    startTransition(async () => {
+      try {
+        const [gens, sorts] = await Promise.all([
+          getAvailableGenerators(),
+          getAvailableSorters(),
+        ]);
+        setGenerators(gens);
+        setSorters(sorts);
+      } catch (error) {
+        console.error('Failed to load strategies:', error);
+        alert('Failed to load available strategies');
+      }
+    });
+  };
+
+  // Load strategies when dialog opens
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(true);
-      Promise.all([getAvailableGenerators(), getAvailableSorters()])
-        .then(([gens, sorts]) => {
-          setGenerators(gens);
-          setSorters(sorts);
-        })
-        .catch((error) => {
-          console.error('Failed to load strategies:', error);
-          alert('Failed to load available strategies');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      void loadStrategies();
     }
   }, [isOpen]);
 
@@ -49,14 +52,12 @@ export function StrategySelectionDialog({
     onConfirm(selectedGenerator, selectedSorter);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal modal-open">
+    <dialog className={`modal ${isOpen ? 'modal-open' : ''}`}>
       <div className="modal-box">
         <h3 className="font-bold text-lg mb-4">Create New Season</h3>
 
-        {loading ? (
+        {isPending ? (
           <div className="flex justify-center py-8">
             <span className="loading loading-spinner loading-lg" />
           </div>
@@ -116,20 +117,20 @@ export function StrategySelectionDialog({
           <button
             className="btn btn-ghost"
             onClick={onCancel}
-            disabled={loading}
+            disabled={isPending}
           >
             Cancel
           </button>
           <button
             className="btn btn-primary"
             onClick={handleConfirm}
-            disabled={loading}
+            disabled={isPending}
           >
             <Icon icon="lucide:check" width="20" height="20" />
             Create Season
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

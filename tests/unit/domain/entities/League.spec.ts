@@ -130,6 +130,37 @@ describe('League - Getters', () => {
     expect(league.getTeamCount()).toBe(3);
   });
 
+  it('should calculate total rounds for round-robin tournament', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+      Team.create({ id: 'team-3', name: 'Team 3', strength: Strength.create(85) }),
+      Team.create({ id: 'team-4', name: 'Team 4', strength: Strength.create(70) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    // With 4 teams: (4-1) * 2 = 6 rounds
+    expect(league.getTotalRounds()).toBe(6);
+  });
+
+  it('should calculate total rounds for 10-team league', () => {
+    const teams = Array.from({ length: 10 }, (_, i) =>
+      Team.create({ id: `team-${i}`, name: `Team ${i}`, strength: Strength.create(75) })
+    );
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+
+    // With 10 teams: (10-1) * 2 = 18 rounds
+    expect(league.getTotalRounds()).toBe(18);
+  });
+
   it('should find team by id', () => {
     const teams = [
       Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),

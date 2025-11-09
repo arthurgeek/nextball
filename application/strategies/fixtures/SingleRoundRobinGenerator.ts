@@ -53,12 +53,13 @@ export class SingleRoundRobinGenerator implements FixtureGenerator {
 
         // Skip if either team is null (bye week)
         if (home && away) {
-          // TODO: Add isNeutralVenue flag when Match entity supports it
+          // Single round robin uses neutral venues (no home advantage)
           matches.push(
             Match.create({
               id: uuidv4(),
               homeTeam: home,
               awayTeam: away,
+              isNeutralVenue: true,
             })
           );
         }

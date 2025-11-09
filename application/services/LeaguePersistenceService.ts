@@ -39,6 +39,7 @@ export interface SerializedSeason {
       id: string;
       homeTeamId: string;
       awayTeamId: string;
+      isNeutralVenue?: boolean;
       result?: {
         homeGoals: number;
         awayGoals: number;
@@ -92,6 +93,7 @@ export class LeaguePersistenceService {
           id: match.getId(),
           homeTeamId: match.getHomeTeam().getId(),
           awayTeamId: match.getAwayTeam().getId(),
+          isNeutralVenue: match.isNeutralVenue() || undefined,
           result: match.getResult()
             ? {
                 homeGoals: match.getResult()!.getHomeGoals(),
@@ -151,6 +153,7 @@ export class LeaguePersistenceService {
           id: matchData.id,
           homeTeam,
           awayTeam,
+          isNeutralVenue: matchData.isNeutralVenue,
         });
 
         if (matchData.result) {

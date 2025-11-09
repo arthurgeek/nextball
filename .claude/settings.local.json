@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run test:unit:*)",
+      "Bash(pnpm run test:e2e:*)",
+      "Bash(npx tsc:*)",
+      "Bash(lsof:*)",
+      "Bash(pnpm run dev)",
+      "Bash(PLAYWRIGHT_HTML_OPEN=never pnpm run test:e2e:*)",
+      "Bash(pnpm test:unit:*)",
+      "Bash(pnpm test:e2e:*)",
+      "Bash(PLAYWRIGHT_HTML_OPEN=never pnpm test:e2e:*)",
+      "Bash(pnpm playwright test:*)",
+      "Bash(pnpm run test:coverage:*)",
+      "Bash(pnpm run lint:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "next-devtools"
+  ]
+}
