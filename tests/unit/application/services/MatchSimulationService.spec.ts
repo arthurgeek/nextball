@@ -64,7 +64,7 @@ describe('MatchSimulationService', () => {
     });
 
     it('should produce reasonable scores with realistic averages', () => {
-      const simulations = 5000;
+      const simulations = 10000;
       let totalHomeGoals = 0;
       let totalAwayGoals = 0;
 
@@ -97,7 +97,7 @@ describe('MatchSimulationService', () => {
   describe('home advantage', () => {
     it('should give home team statistical advantage over many matches', () => {
       // Equal strength teams, but home should win more often
-      const simulations = 5000;
+      const simulations = 10000;
       let homeWins = 0;
       let awayWins = 0;
       let draws = 0;
@@ -136,7 +136,7 @@ describe('MatchSimulationService', () => {
     });
 
     it('should generate more home goals than away goals on average', () => {
-      const simulations = 5000;
+      const simulations = 10000;
       let totalHomeGoals = 0;
       let totalAwayGoals = 0;
 
@@ -164,7 +164,7 @@ describe('MatchSimulationService', () => {
         isNeutralVenue: true,
       });
 
-      const simulations = 5000;
+      const simulations = 10000;
       let homeWins = 0;
       let awayWins = 0;
       let draws = 0;
@@ -211,7 +211,7 @@ describe('MatchSimulationService', () => {
         isNeutralVenue: true,
       });
 
-      const simulations = 5000;
+      const simulations = 10000;
       let totalHomeGoals = 0;
       let totalAwayGoals = 0;
 
@@ -244,7 +244,7 @@ describe('MatchSimulationService', () => {
         strength: Strength.create(60),
       });
 
-      const simulations = 5000; // Increased sample size for statistical reliability
+      const simulations = 10000; // Increased sample size for statistical reliability
       let strongWins = 0;
       let weakWins = 0;
 
@@ -300,7 +300,7 @@ describe('MatchSimulationService', () => {
         strength: Strength.create(60),
       });
 
-      const simulations = 5000; // Increased sample size for statistical reliability
+      const simulations = 10000; // Increased sample size for statistical reliability
       let weakWins = 0;
       let draws = 0;
       let strongWins = 0;
@@ -358,7 +358,7 @@ describe('MatchSimulationService', () => {
         isNeutralVenue: true,
       });
 
-      const simulations = 5000;
+      const simulations = 10000;
       let winsWithPerfectForm = 0;
       let winsWithNeutralForm = 0;
 
@@ -388,7 +388,7 @@ describe('MatchSimulationService', () => {
         isNeutralVenue: true,
       });
 
-      const simulations = 5000;
+      const simulations = 10000;
       let winsWithTerribleForm = 0;
       let winsWithNeutralForm = 0;
 

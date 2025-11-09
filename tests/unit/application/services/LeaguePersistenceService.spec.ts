@@ -163,6 +163,15 @@ describe('LeaguePersistenceService', () => {
 
       expect(loaded).toBeNull();
     });
+
+    it('should return null when localStorage contains invalid JSON', () => {
+      // Set corrupted data in localStorage
+      localStorageMock.setItem('current-season', 'invalid-json-{{{');
+
+      const loaded = service.loadSeason();
+
+      expect(loaded).toBeNull();
+    });
   });
 
   describe('SSR handling', () => {
