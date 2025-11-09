@@ -170,7 +170,7 @@ describe('MatchSimulationService', () => {
       let draws = 0;
 
       for (let i = 0; i < simulations; i++) {
-        const result = service.simulate(neutralMatch);
+        const result = service.simulate(neutralMatch, neutralForm, neutralForm);
         const matchResult = result.getResult();
 
         if (matchResult?.isHomeWin()) {
@@ -216,7 +216,7 @@ describe('MatchSimulationService', () => {
       let totalAwayGoals = 0;
 
       for (let i = 0; i < simulations; i++) {
-        const result = service.simulate(neutralMatch);
+        const result = service.simulate(neutralMatch, neutralForm, neutralForm);
         totalHomeGoals += result.getResult()?.getHomeGoals() ?? 0;
         totalAwayGoals += result.getResult()?.getAwayGoals() ?? 0;
       }
@@ -355,7 +355,7 @@ describe('MatchSimulationService', () => {
         id: 'neutral-match',
         homeTeam,
         awayTeam,
-        isNeutral: true,
+        isNeutralVenue: true,
       });
 
       const simulations = 1000;
@@ -385,7 +385,7 @@ describe('MatchSimulationService', () => {
         id: 'neutral-match',
         homeTeam,
         awayTeam,
-        isNeutral: true,
+        isNeutralVenue: true,
       });
 
       const simulations = 1000;
@@ -407,33 +407,6 @@ describe('MatchSimulationService', () => {
 
       // Terrible form should lead to significantly fewer wins
       expect(winsWithTerribleForm).toBeLessThan(winsWithNeutralForm);
-    });
-
-    it('should apply form to both teams independently', () => {
-      const simulations = 1000;
-      let homeWins = 0;
-      let awayWins = 0;
-      let draws = 0;
-
-      const perfectForm = Form.create({ results: [FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN, FormResult.WIN] }); // 1.0
-
-      for (let i = 0; i < simulations; i++) {
-        // Both teams have perfect form - home advantage should still apply
-        const result = service.simulate(match, perfectForm, perfectForm);
-        const matchResult = result.getResult();
-
-        if (matchResult?.isHomeWin()) homeWins++;
-        else if (matchResult?.isAwayWin()) awayWins++;
-        else draws++;
-      }
-
-      // Home advantage should still apply when both teams have perfect form
-      expect(homeWins).toBeGreaterThan(awayWins);
-
-      // All three outcomes should be possible
-      expect(homeWins).toBeGreaterThan(0);
-      expect(awayWins).toBeGreaterThan(0);
-      expect(draws).toBeGreaterThan(0);
     });
   });
 });

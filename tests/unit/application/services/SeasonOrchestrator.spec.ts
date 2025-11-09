@@ -32,7 +32,7 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
 
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+    const seasonSimService = new SeasonSimulationService();
 
     coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
     persistence = new LeaguePersistenceService();

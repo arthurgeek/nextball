@@ -5,6 +5,7 @@ import { LeagueService } from '../services/LeagueService';
 import { SeasonSimulationService } from '../services/SeasonSimulationService';
 import type { FixtureGenerator } from '../strategies/fixtures/FixtureGenerator';
 import type { StandingSorter } from '../strategies/standings/StandingSorter';
+import { Form, FormResult } from '@/domain/value-objects/Form';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -68,8 +69,14 @@ export class LeagueCoordinator {
     }
 
     // Simulate all matches in the round
+    // TODO: Calculate actual team form from recent results
+    // For now using neutral form as placeholder
+    const neutralForm = Form.create({
+      results: [FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW]
+    });
+
     const simulatedMatches = round.getMatches().map((match) => {
-      return this.matchSimulationService.simulate(match);
+      return this.matchSimulationService.simulate(match, neutralForm, neutralForm);
     });
 
     // Update the round with simulated matches

@@ -16,7 +16,7 @@ describe('SeasonSimulationService - Fixture Generation', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    service = new SeasonSimulationService(matchSimService, leagueService);
+    service = new SeasonSimulationService();
 
     teams = [
       Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
@@ -52,7 +52,7 @@ describe('SeasonSimulationService - Round Management', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    service = new SeasonSimulationService(matchSimService, leagueService);
+    service = new SeasonSimulationService();
 
     teams = [
       Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),

@@ -17,7 +17,7 @@ describe('LeagueCoordinator - Season Creation', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+    const seasonSimService = new SeasonSimulationService();
 
     coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
 
@@ -116,7 +116,7 @@ describe('LeagueCoordinator - Season Simulation', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+    const seasonSimService = new SeasonSimulationService();
 
     coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
 
@@ -188,7 +188,7 @@ describe('LeagueCoordinator - Season Completion', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+    const seasonSimService = new SeasonSimulationService();
 
     coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
 
@@ -266,7 +266,7 @@ describe('LeagueCoordinator - Utility Methods', () => {
   beforeEach(() => {
     const matchSimService = new MatchSimulationService();
     const leagueService = new LeagueService();
-    const seasonSimService = new SeasonSimulationService(matchSimService, leagueService);
+    const seasonSimService = new SeasonSimulationService();
 
     coordinator = new LeagueCoordinator(matchSimService, leagueService, seasonSimService);
 

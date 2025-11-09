@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Team } from '@/domain/entities/Team';
 import { Match } from '@/domain/entities/Match';
 import { Strength } from '@/domain/value-objects/Strength';
+import { Form, FormResult } from '@/domain/value-objects/Form';
 import { League } from '@/domain/entities/League';
 import {
   getMatchSimulationService,
@@ -56,8 +57,12 @@ export async function simulateMatch(
   });
 
   // Simulate
+  // TODO: Use actual team form once available
+  const neutralForm = Form.create({
+    results: [FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW, FormResult.DRAW]
+  });
   const simulationService = getMatchSimulationService();
-  const simulatedMatch = simulationService.simulate(match);
+  const simulatedMatch = simulationService.simulate(match, neutralForm, neutralForm);
 
   const matchResult = simulatedMatch.getResult();
   const homeGoals = matchResult?.getHomeGoals() ?? 0;
