@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SeasonSimulationService } from '@/application/services/SeasonSimulationService';
-import { MatchSimulationService } from '@/application/services/MatchSimulationService';
-import { LeagueService } from '@/application/services/LeagueService';
 import { Team } from '@/domain/entities/Team';
 import { Strength } from '@/domain/value-objects/Strength';
 import { DoubleRoundRobinGenerator } from '@/application/strategies/fixtures/DoubleRoundRobinGenerator';
@@ -14,8 +12,6 @@ describe('SeasonSimulationService - Fixture Generation', () => {
   let teams: Team[];
 
   beforeEach(() => {
-    const matchSimService = new MatchSimulationService();
-    const leagueService = new LeagueService();
     service = new SeasonSimulationService();
 
     teams = [
@@ -50,8 +46,6 @@ describe('SeasonSimulationService - Round Management', () => {
   let teams: Team[];
 
   beforeEach(() => {
-    const matchSimService = new MatchSimulationService();
-    const leagueService = new LeagueService();
     service = new SeasonSimulationService();
 
     teams = [

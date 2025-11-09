@@ -256,7 +256,7 @@ describe('MatchSimulationService', () => {
           homeTeam: strongTeam,
           awayTeam: weakTeam,
         });
-        const homeResult = service.simulate(strongHomeMatch);
+        const homeResult = service.simulate(strongHomeMatch, neutralForm, neutralForm);
 
         if (homeResult.getResult()?.isHomeWin()) strongWins++;
         else if (homeResult.getResult()?.isAwayWin()) weakWins++;
@@ -267,7 +267,7 @@ describe('MatchSimulationService', () => {
           homeTeam: weakTeam,
           awayTeam: strongTeam,
         });
-        const awayResult = service.simulate(strongAwayMatch);
+        const awayResult = service.simulate(strongAwayMatch, neutralForm, neutralForm);
 
         if (awayResult.getResult()?.isAwayWin()) strongWins++;
         else if (awayResult.getResult()?.isHomeWin()) weakWins++;
@@ -313,7 +313,7 @@ describe('MatchSimulationService', () => {
           homeTeam: weakTeam,
           awayTeam: strongTeam,
         });
-        const homeResult = service.simulate(weakHomeMatch);
+        const homeResult = service.simulate(weakHomeMatch, neutralForm, neutralForm);
 
         if (homeResult.getResult()?.isHomeWin()) weakWins++;
         else if (homeResult.getResult()?.isDraw()) draws++;
@@ -325,7 +325,7 @@ describe('MatchSimulationService', () => {
           homeTeam: strongTeam,
           awayTeam: weakTeam,
         });
-        const awayResult = service.simulate(weakAwayMatch);
+        const awayResult = service.simulate(weakAwayMatch, neutralForm, neutralForm);
 
         if (awayResult.getResult()?.isAwayWin()) weakWins++;
         else if (awayResult.getResult()?.isDraw()) draws++;

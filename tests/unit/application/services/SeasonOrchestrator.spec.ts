@@ -138,4 +138,27 @@ describe('SeasonOrchestrator - Serialization Boundary', () => {
     expect(result.standings).toBeDefined();
     expect(result.standings.length).toBe(teams.length);
   });
+
+  it('should not save championship when championId does not match any team', () => {
+    const generator = new DoubleRoundRobinGenerator();
+    const season = coordinator.createSeason(league, 2025, generator, new PointsGoalDifferenceSorter());
+    let serialized = persistence.serializeSeason(season);
+
+    const saveSpy = vi.spyOn(persistence, 'saveChampionship');
+
+    // Simulate all rounds except the last
+    const totalRounds = season.getRounds().length;
+    for (let i = 0; i < totalRounds - 1; i++) {
+      serialized = orchestrator.simulateNextRound(serialized);
+    }
+
+    // Manually corrupt the championId to a non-existent team
+    serialized.championId = 'non-existent-team-id';
+
+    // Simulate the last round
+    serialized = orchestrator.simulateNextRound(serialized);
+
+    // Championship should NOT be saved because team was not found
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
 });

@@ -36,7 +36,7 @@ describe('LeaguePersistenceService', () => {
 
   beforeEach(() => {
     // Setup localStorage mock
-    global.localStorage = localStorageMock as any;
+    global.localStorage = localStorageMock as Storage;
     localStorageMock.clear();
 
     service = new LeaguePersistenceService();

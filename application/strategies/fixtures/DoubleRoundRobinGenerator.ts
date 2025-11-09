@@ -61,9 +61,7 @@ export class DoubleRoundRobinGenerator implements FixtureGenerator {
         }
       }
 
-      if (matches.length > 0) {
-        rounds.push(Round.create({ roundNumber: round + 1, matches }));
-      }
+      rounds.push(Round.create({ roundNumber: round + 1, matches }));
 
       // Rotate teams (keep first team fixed, rotate others)
       const lastTeam = participants.pop()!;
