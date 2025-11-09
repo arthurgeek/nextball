@@ -11,7 +11,7 @@ import type { Form } from '@/domain/value-objects/Form';
  * Implements realistic goal scoring based on:
  * - Logistic regression for xG calculation (S-curve based on team strength)
  * - Home advantage boost
- * - Recent form impact (optional)
+ * - Recent form impact
  * - Performance variance (on-the-day form)
  */
 export class MatchSimulationService {
@@ -19,15 +19,15 @@ export class MatchSimulationService {
    * Simulate a match between home and away teams
    * Uses Poisson distribution with:
    * - Logistic xG calculation based on team strength (with home advantage baked in)
-   * - Optional recent form as additional regression factor
+   * - Recent form as additional regression factor
    * - Performance modifiers for realistic variance
    *
    * @param match - Match to simulate (must have home and away teams)
-   * @param homeForm - Optional recent form for home team
-   * @param awayForm - Optional recent form for away team
+   * @param homeForm - Recent form for home team
+   * @param awayForm - Recent form for away team
    * @returns New Match instance with result
    */
-  simulate(match: Match, homeForm?: Form, awayForm?: Form): Match {
+  simulate(match: Match, homeForm: Form, awayForm: Form): Match {
     const homeTeam = match.getHomeTeam();
     const awayTeam = match.getAwayTeam();
     const isNeutral = match.isNeutralVenue();
