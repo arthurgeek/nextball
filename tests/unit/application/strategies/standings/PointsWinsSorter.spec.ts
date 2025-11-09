@@ -137,6 +137,22 @@ describe('PointsWinsSorter - Sorting Logic', () => {
     expect(sorted[1].getTeam().getId()).toBe('team-1');
   });
 
+  it('should handle multiple teams with zero games played (PPG = 0 for both)', () => {
+    const teamA = Team.create({ id: 'team-1', name: 'Arsenal', strength: Strength.create(75) });
+    const teamB = Team.create({ id: 'team-2', name: 'Barcelona', strength: Strength.create(80) });
+
+    const standings = [
+      Standing.create({ team: teamB }), // 0 games played
+      Standing.create({ team: teamA }), // 0 games played
+    ];
+
+    const sorted = sorter.sort(standings);
+
+    // Both teams have 0 PPG, should sort alphabetically
+    expect(sorted[0].getTeam().getName()).toBe('Arsenal');
+    expect(sorted[1].getTeam().getName()).toBe('Barcelona');
+  });
+
   it('should update positions correctly after sorting', () => {
     const team1 = Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) });
     const team2 = Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) });

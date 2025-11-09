@@ -119,6 +119,33 @@ describe('Season - Creation', () => {
 
     expect(season.getChampionId()).toBeUndefined();
   });
+
+  it('should default rounds and standings to empty arrays if not provided', () => {
+    const teams = [
+      Team.create({ id: 'team-1', name: 'Team 1', strength: Strength.create(75) }),
+      Team.create({ id: 'team-2', name: 'Team 2', strength: Strength.create(80) }),
+    ];
+    const league = League.create({
+      id: 'league-1',
+      name: 'Premier League',
+      teams,
+    });
+    const sorter = new PointsGoalDifferenceSorter();
+    const generator = new DoubleRoundRobinGenerator();
+
+    const season = Season.create({
+      id: 'season-1',
+      league,
+      year: 2025,
+      generator,
+      sorter,
+      // No rounds or standings provided - testing nullish coalescing
+    });
+
+    expect(season.getRounds()).toEqual([]);
+    expect(season.getStandings()).toEqual([]);
+    expect(season.getCurrentRound()).toBe(0);
+  });
 });
 
 describe('Season - Immutability', () => {
