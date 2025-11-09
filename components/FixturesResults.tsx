@@ -51,18 +51,18 @@ export function FixturesResults({
                   icon="lucide:home"
                   width="14"
                   height="14"
-                  className="text-success flex-shrink-0"
+                  className="text-success shrink-0"
                   title="Home advantage"
                 />
               )}
               <span className="font-medium">{homeTeam.name}</span>
-              <span className="text-xs opacity-60 flex-shrink-0">
+              <span className="text-xs opacity-60 shrink-0">
                 ({homeTeam.strength.toFixed(1)})
               </span>
             </div>
 
             {/* Score/VS */}
-            <div className="min-w-[80px] text-center flex items-center justify-center gap-2 flex-shrink-0">
+            <div className="min-w-20 text-center flex items-center justify-center gap-2 shrink-0">
               {match.result ? (
                 <span className="font-bold text-lg">
                   {match.result.homeGoals} - {match.result.awayGoals}
@@ -75,7 +75,7 @@ export function FixturesResults({
                       icon="lucide:map-pin"
                       width="14"
                       height="14"
-                      className="opacity-60 flex-shrink-0"
+                      className="opacity-60 shrink-0"
                       title="Neutral venue"
                     />
                   )}
@@ -85,7 +85,7 @@ export function FixturesResults({
 
             {/* Away Team - left aligned */}
             <div className="flex-1 flex items-center gap-2">
-              <span className="text-xs opacity-60 flex-shrink-0">
+              <span className="text-xs opacity-60 shrink-0">
                 ({awayTeam.strength.toFixed(1)})
               </span>
               <span className="font-medium">{awayTeam.name}</span>
